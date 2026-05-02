@@ -11,6 +11,24 @@ const Sidebar = ({
   roleTitle,
   roleColor = "emerald"
 }) => {
+  // 🎨 COLOR MAP FOR DYNAMIC TAILWIND CLASSES
+  const colorMap = {
+    emerald: {
+      active: "bg-emerald-600 text-white shadow-emerald-200",
+      hover: "hover:bg-emerald-50 hover:text-emerald-600",
+      lightBg: "bg-emerald-50",
+      border: "border-emerald-100"
+    },
+    blue: {
+      active: "bg-blue-600 text-white shadow-blue-200",
+      hover: "hover:bg-blue-50 hover:text-blue-600",
+      lightBg: "bg-blue-50",
+      border: "border-blue-100"
+    }
+  };
+
+  const theme = colorMap[roleColor] || colorMap.emerald;
+
   return (
     <>
       {/* 📱 MOBILE OVERLAY */}
@@ -28,11 +46,11 @@ const Sidebar = ({
       `}>
         {/* BRANDING */}
         <div className="flex items-center gap-4 mb-10 px-2">
-          <div className={`w-14 h-14 flex items-center justify-center p-1.5 bg-white rounded-full border-2 border-${roleColor}-100 hover:scale-105 transition-transform duration-500 overflow-hidden shrink-0`}>
+          <div className={`w-14 h-14 flex items-center justify-center p-1.5 bg-white rounded-full border-2 ${theme.border} hover:scale-105 transition-transform duration-500 overflow-hidden shrink-0`}>
             <img src={logo} alt="ArogyaPath Logo" className="w-full h-full object-cover" />
           </div>
           <span className="text-2xl font-black text-gray-900 tracking-tight">
-            Arogya<span className={`text-${roleColor}-600`}>Path</span>
+            Arogya<span className={roleColor === 'emerald' ? 'text-emerald-600' : 'text-blue-600'}>Path</span>
           </span>
         </div>
 
@@ -51,10 +69,10 @@ const Sidebar = ({
               }}
               className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 group
                 ${activeTab === item.id
-                  ? `bg-${roleColor}-600 text-white shadow-lg shadow-${roleColor}-200 scale-[1.02]`
+                  ? `${theme.active} shadow-lg scale-[1.02]`
                   : item.danger
                     ? 'text-gray-400 hover:bg-red-50 hover:text-red-500'
-                    : `text-gray-400 hover:bg-${roleColor}-50 hover:text-${roleColor}-600`}
+                    : `text-gray-400 ${item.hoverColor ? colorMap[item.hoverColor].hover : theme.hover}`}
               `}
             >
               <span className={`

@@ -61,8 +61,25 @@ const DashboardLayout = ({
               <span className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
 
-            <div className={`px-6 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm`}>
-              <p className={`text-[10px] font-black text-${roleColor}-600 uppercase tracking-widest`}>{roleTitle}</p>
+            {/* 👤 PROFILE QUICK VIEW */}
+            <div className="flex items-center gap-4 pl-2 bg-white border border-gray-100 rounded-3xl p-1.5 pr-6 shadow-sm hover:shadow-md transition-all group cursor-pointer">
+              <div className={`w-11 h-11 rounded-2xl overflow-hidden bg-${roleColor}-50 border border-${roleColor}-100 flex items-center justify-center`}>
+                {userDoc?.photoUrl ? (
+                  <img src={userDoc.photoUrl} alt="User Profile" className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                ) : (
+                  <div className={`text-${roleColor}-600 font-black text-lg`}>
+                    {userDoc?.fullName?.[0] || "?"}
+                  </div>
+                )}
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-black text-gray-900 leading-none mb-1">
+                  {userDoc?.fullName || "Arogya User"}
+                </p>
+                <p className={`text-[10px] font-black text-${roleColor}-600 uppercase tracking-widest leading-none`}>
+                  {roleTitle}
+                </p>
+              </div>
             </div>
           </div>
         </div>

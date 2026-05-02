@@ -94,7 +94,7 @@ const PatientDashboard = () => {
     { id: "symptom", icon: <BrainCircuit size={20} />, label: t("dashboard.symptom_checker") },
     { id: "appointments", icon: <Calendar size={20} />, label: t("dashboard.appointments") },
     { id: "history", icon: <FileText size={20} />, label: t("dashboard.history") },
-    { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_doctor"), action: handleRoleSwitch, special: true },
+    { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_doctor"), action: handleRoleSwitch, special: true, hoverColor: "blue" },
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
   ];
 
@@ -104,7 +104,7 @@ const PatientDashboard = () => {
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       userDoc={profileData || userDoc}
-      roleTitle="Patient Account"
+      roleTitle="PATIENT ACCOUNT"
       roleColor="emerald"
       welcomeName={profileData?.fullName?.split(" ")[0] || userDoc?.fullName?.split(" ")[0] || "Friend"}
     >

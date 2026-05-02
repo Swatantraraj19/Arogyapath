@@ -90,7 +90,7 @@ const DoctorDashboard = () => {
     { id: "requests", icon: <Users size={20} />, label: "New Requests" },
     { id: "appointments", icon: <Clock size={20} />, label: "Active Consults" },
     { id: "history", icon: <FileText size={20} />, label: "Patient History" },
-    { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_patient"), action: handleRoleSwitch, special: true },
+    { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_patient"), action: handleRoleSwitch, special: true, hoverColor: "emerald" },
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
   ];
 
@@ -100,7 +100,7 @@ const DoctorDashboard = () => {
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       userDoc={profileData || userDoc}
-      roleTitle="Medical Expert"
+      roleTitle="DOCTOR ACCOUNT"
       roleColor="blue"
       welcomeName={`Dr. ${(profileData?.fullName || userDoc?.fullName || "Consultant").split(" ")[0]}`}
     >
