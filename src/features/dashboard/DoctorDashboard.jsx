@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { logOut } from "../../firebase/services/auth";
 import {
   LogOut, LayoutDashboard, Users, Clock,
-  FileText, RefreshCw, ClipboardList, Settings, User
+  FileText, RefreshCw, Settings, UserCircle
 } from "lucide-react";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/config";
@@ -15,6 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import DoctorOverview from "./components/DoctorOverview";
 import AppointmentList from "./components/AppointmentList";
+import ProfileUpdate from "./components/ProfileUpdate";
 
 const DoctorDashboard = () => {
   const { t } = useTranslation();
@@ -37,7 +38,7 @@ const DoctorDashboard = () => {
     const docRef = doc(db, "doctors", currentUser.uid);
     const unsubscribe = onSnapshot(docRef, (snap) => {
       if (snap.exists()) {
-        setProfileData({ ...snap.data(), ...userDoc });
+        setProfileData({ ...userDoc, ...snap.data() });
       } else {
         setProfileData(userDoc);
       }
@@ -90,6 +91,7 @@ const DoctorDashboard = () => {
     { id: "requests", icon: <Users size={20} />, label: "New Requests" },
     { id: "appointments", icon: <Clock size={20} />, label: "Active Consults" },
     { id: "history", icon: <FileText size={20} />, label: "Patient History" },
+    { id: "profile", icon: <UserCircle size={20} />, label: t("dashboard.profile") },
     { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_patient"), action: handleRoleSwitch, special: true, hoverColor: "emerald" },
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
   ];
@@ -106,6 +108,7 @@ const DoctorDashboard = () => {
     >
       {/* 🧩 TAB CONTENT */}
       {activeTab === "overview" && <DoctorOverview t={t} userDoc={profileData || userDoc} />}
+      {activeTab === "profile" && <ProfileUpdate role="doctor" existingData={profileData || userDoc} />}
 
       {(activeTab === "requests" || activeTab === "appointments" || activeTab === "history") && (
         <AppointmentList role="doctor" appointments={[]} />

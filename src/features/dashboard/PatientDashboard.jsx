@@ -7,7 +7,7 @@ import { db } from "../../firebase/config";
 import { doc, onSnapshot } from "firebase/firestore";
 import {
   LogOut, LayoutDashboard, Settings, BrainCircuit,
-  MessageSquare, FileText, RefreshCw, Calendar, User
+  MessageSquare, FileText, RefreshCw, Calendar, User, UserCircle
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -16,6 +16,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import PatientOverview from "./components/PatientOverview";
 import SymptomChecker from "./components/SymptomChecker";
 import AppointmentList from "./components/AppointmentList";
+import ProfileUpdate from "./components/ProfileUpdate";
 
 const PatientDashboard = () => {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ const PatientDashboard = () => {
     const docRef = doc(db, "patients", currentUser.uid);
     const unsubscribe = onSnapshot(docRef, (snap) => {
       if (snap.exists()) {
-        setProfileData({ ...snap.data(), ...userDoc });
+        setProfileData({ ...userDoc, ...snap.data() });
       } else {
         setProfileData(userDoc);
       }
@@ -94,6 +95,7 @@ const PatientDashboard = () => {
     { id: "symptom", icon: <BrainCircuit size={20} />, label: t("dashboard.symptom_checker") },
     { id: "appointments", icon: <Calendar size={20} />, label: t("dashboard.appointments") },
     { id: "history", icon: <FileText size={20} />, label: t("dashboard.history") },
+    { id: "profile", icon: <UserCircle size={20} />, label: t("dashboard.profile") },
     { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_doctor"), action: handleRoleSwitch, special: true, hoverColor: "blue" },
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
   ];
@@ -112,6 +114,7 @@ const PatientDashboard = () => {
       {activeTab === "overview" && <PatientOverview t={t} userDoc={profileData || userDoc} />}
       {activeTab === "symptom" && <SymptomChecker t={t} />}
       {activeTab === "appointments" && <AppointmentList role="patient" appointments={[]} />}
+      {activeTab === "profile" && <ProfileUpdate role="patient" existingData={profileData || userDoc} />}
 
       {/* 🚧 COMING SOON SECTIONS */}
       {(activeTab === "history" || activeTab === "chat") && (
