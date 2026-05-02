@@ -71,5 +71,41 @@
     "error_clinic_address": "पता बहुत छोटा है (न्यूनतम 10 अक्षर)",
     "error_invalid": "अमान्य प्रारूप (अक्षर होने चाहिए)",
     "success": "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!"
+  },
+  "dashboard": {
+    "welcome": "वापसी पर स्वागत है",
+    "overview": "अवलोकन",
+    "symptom_checker": "लक्षण जांचकर्ता",
+    "appointments": "अपॉइंटमेंट",
+    "history": "इतिहास",
+    "health_vault": "हेल्थ वॉल्ट",
+    "profile": "मेरी प्रोफाइल",
+    "settings": "सेटिंग्स",
+    "sign_out": "साइन आउट",
+    "switch_to_doctor": "डॉक्टर पर स्विच करें",
+    "switch_to_patient": "मरीज पर स्विच करें",
+    "loading": "डेटा लोड हो रहा है...",
+    "no_appointments": "कोई अपॉइंटमेंट नहीं मिला",
+    "no_records": "कोई मेडिकल रिकॉर्ड नहीं मिला"
+  },
+  "symptom_checker": {
+    "title": "AI लक्षण जांचकर्ता",
+    "subtitle": "बताएं कि आप कैसा महसूस कर रहे हैं, और हमारा AI प्रारंभिक मूल्यांकन प्रदान करेगा।",
+    "placeholder": "जैसे: मुझे कल से लगातार खांसी और हल्का बुखार है...",
+    "upload_image": "छवि अपलोड करें",
+    "upload_file": "रिपोर्ट अपलोड करें",
+    "analyze": "लक्षणों का विश्लेषण करें",
+    "severity_low": "कम गंभीरता",
+    "severity_medium": "मध्यम गंभीरता",
+    "severity_high": "उच्च गंभीरता",
+    "suggestion": "सिफारिश"
+  },
+  "appointments": {
+    "pending": "लंबित",
+    "accepted": "स्वीकृत",
+    "rejected": "अस्वीकृत",
+    "completed": "पूरा हुआ",
+    "book_now": "अपॉइंटमेंट बुक करें",
+    "find_doctors": "डॉक्टर खोजें"
   }
 }

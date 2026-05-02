@@ -1,109 +1,125 @@
-
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { logOut } from "../../firebase/services/auth";
-import { LogOut, Stethoscope, Users, ClipboardList, Clock } from "lucide-react";
+import {
+  LogOut, LayoutDashboard, Users, Clock,
+  FileText, RefreshCw, ClipboardList, Settings, User
+} from "lucide-react";
+import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase/config";
 import { toast } from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
+
+// 🧩 COMPONENTS
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import DoctorOverview from "./components/DoctorOverview";
+import AppointmentList from "./components/AppointmentList";
 
 const DoctorDashboard = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { currentUser, userDoc } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [profileData, setProfileData] = useState(null);
+  
+  // 🚀 SCROLL TO TOP ON MOUNT
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Also scroll the main container if it exists
+    const mainContent = document.querySelector('main');
+    if (mainContent) mainContent.scrollTop = 0;
+  }, []);
+
+  // 🧬 Fetch Role-Specific Details (Deep Hydration)
+  useEffect(() => {
+    if (!currentUser) return;
+    const docRef = doc(db, "doctors", currentUser.uid);
+    const unsubscribe = onSnapshot(docRef, (snap) => {
+      if (snap.exists()) {
+        setProfileData({ ...snap.data(), ...userDoc });
+      } else {
+        setProfileData(userDoc);
+      }
+    });
+    return () => unsubscribe();
+  }, [currentUser, userDoc]);
+
+  // 🔄 ROLE SWITCH LOGIC
+  const handleRoleSwitch = async () => {
+    const targetRole = "patient";
+    const completedRoles = userDoc?.completedRoles || [];
+
+    if (completedRoles.includes(targetRole)) {
+      const previousRole = userDoc?.role;
+      try {
+        localStorage.setItem("roleVerified", targetRole);
+        document.body.setAttribute("data-role", targetRole);
+
+        await updateDoc(doc(db, "users", currentUser.uid), { role: targetRole });
+        navigate(`/dashboard/${targetRole}`);
+      } catch (error) {
+        if (previousRole) {
+          localStorage.setItem("roleVerified", previousRole);
+          document.body.setAttribute("data-role", previousRole);
+        }
+        toast.error("Failed to sync role with cloud. Reverting...");
+      }
+    } else {
+      toast(t("dashboard.switch_to_patient") + "...", { icon: "🔄" });
+      navigate(`/profile-setup/${targetRole}`);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       await logOut();
       sessionStorage.clear();
-      localStorage.clear(); // 🛡️ Clear Permanent Lobby Lock
+      localStorage.clear();
       document.body.removeAttribute("data-role");
-      toast.success("Logged out successfully");
+      toast.success("Safe travels, Doctor!");
       navigate("/", { replace: true });
     } catch (error) {
       toast.error("Logout failed");
     }
   };
 
-  useEffect(() => {
-    window.history.pushState(null, "", window.location.href);
-
-    const handleBack = () => {
-      window.history.pushState(null, "", window.location.href);
-    };
-
-    window.addEventListener("popstate", handleBack);
-
-    return () => window.removeEventListener("popstate", handleBack);
-  }, []);
+  // 🔗 NAVIGATION CONFIG
+  const navItems = [
+    { id: "overview", icon: <LayoutDashboard size={20} />, label: t("dashboard.overview") },
+    { id: "requests", icon: <Users size={20} />, label: "New Requests" },
+    { id: "appointments", icon: <Clock size={20} />, label: "Active Consults" },
+    { id: "history", icon: <FileText size={20} />, label: "Patient History" },
+    { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_patient"), action: handleRoleSwitch, special: true },
+    { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
+  ];
 
   return (
-    <div className="min-h-screen bg-blue-50/30 p-6 animate-in fade-in duration-700">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <DashboardLayout
+      navItems={navItems}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      userDoc={profileData || userDoc}
+      roleTitle="Medical Expert"
+      roleColor="blue"
+      welcomeName={`Dr. ${(profileData?.fullName || userDoc?.fullName || "Consultant").split(" ")[0]}`}
+    >
+      {/* 🧩 TAB CONTENT */}
+      {activeTab === "overview" && <DoctorOverview t={t} userDoc={profileData || userDoc} />}
 
-        {/* HEADER */}
-        <header className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-blue-100">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-              <Stethoscope size={24} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">ArogyaPath</h1>
-              <p className="text-blue-600 font-medium text-sm">{t("role_entry.doctor_title")}</p>
-            </div>
+      {(activeTab === "requests" || activeTab === "appointments" || activeTab === "history") && (
+        <AppointmentList role="doctor" appointments={[]} />
+      )}
+
+      {activeTab === "settings" && (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white rounded-[3rem] p-12 border border-dashed border-gray-200 text-center space-y-4">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-300">
+            <Settings size={40} className="animate-spin-slow" />
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-red-600 font-semibold hover:bg-red-50 rounded-xl transition-all duration-300"
-          >
-            <LogOut size={20} />
-            <span className="hidden md:inline">Logout</span>
-          </button>
-        </header>
-
-        {/* WELCOME SECTION */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-blue-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl shadow-blue-200">
-            <div className="relative z-10 space-y-4">
-              <h2 className="text-3xl font-bold">Manage your practice with ease.</h2>
-              <p className="text-blue-100 max-w-md">Review patient records, manage upcoming consultations, and update your clinic availability in real-time.</p>
-              <button className="bg-white text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg">
-                View Appointments
-              </button>
-            </div>
-            {/* Abstract shapes for premium feel */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
-          </div>
-
-          <div className="bg-white rounded-3xl p-8 border border-blue-100 shadow-sm flex flex-col justify-center items-center text-center space-y-4">
-            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
-              <Users size={40} />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 text-lg">New Consultations?</h3>
-              <p className="text-gray-500 text-sm">You have 0 pending requests for today.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* QUICK ACTIONS */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { icon: <Clock />, label: "Schedule", color: "text-blue-600", bg: "bg-blue-50" },
-            { icon: <ClipboardList />, label: "Prescriptions", color: "text-indigo-600", bg: "bg-indigo-50" },
-            { icon: <Users />, label: "Patients", color: "text-emerald-600", bg: "bg-emerald-50" },
-            { icon: <Stethoscope />, label: "Medical Library", color: "text-orange-600", bg: "bg-orange-50" },
-          ].map((action, i) => (
-            <button key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
-              <div className={`w-12 h-12 ${action.bg} ${action.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                {action.icon}
-              </div>
-              <span className="font-bold text-gray-700">{action.label}</span>
-            </button>
-          ))}
-        </section>
-
-      </div>
-    </div>
+          <p className="text-gray-400 font-bold">Settings module coming soon.</p>
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 

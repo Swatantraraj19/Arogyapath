@@ -14,8 +14,15 @@ const RoleEntry = () => {
   const { currentUser, userDoc } = useAuth();
   const [selectedRole, setSelectedRole] = useState(null);
 
+  // 🛡️ BACK-BUTTON GUARD: If role is already verified for this session, stay on dashboard
+  useEffect(() => {
+    const roleVerified = localStorage.getItem("roleVerified");
+    if (roleVerified && userDoc?.completedRoles?.includes(roleVerified)) {
+      navigate(`/dashboard/${roleVerified}`, { replace: true });
+    }
+  }, [userDoc, navigate]);
 
-
+  // 🛡️ NO AUTO-REDIRECT: User must always select a role in this session
   const roles = [
     {
       id: "patient",
@@ -76,7 +83,7 @@ const RoleEntry = () => {
     }
 
     // 🛡️ MULTI-ROLE CHECK: 
-    // If user already finished onboarding for THIS SPECIFIC role, go to dashboard.
+    // If user already finished onboarding for THIS role, go to dashboard.
     if (userDoc?.completedRoles?.includes(selectedRole)) {
       // 🔑 VERIFY SESSION: Set the SPECIFIC role key for this session
       localStorage.setItem("roleVerified", selectedRole);
@@ -87,7 +94,7 @@ const RoleEntry = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-8 animate-in fade-in duration-1000">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-8">
       
       {/* HEADER */}
       <div className="text-center space-y-2 max-w-lg">

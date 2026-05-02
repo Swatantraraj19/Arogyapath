@@ -25,9 +25,9 @@ const PublicRoute = ({ children }) => {
     // 🔑 SCENARIO 2: Returning User / Back Button
     const roleVerified = localStorage.getItem("roleVerified");
 
-    // 🛡️ MULTI-ROLE SECURITY: Only redirect if ACTIVE role matches the SESSION key AND is finished
-    if (userDoc?.completedRoles?.includes(userDoc.role) && roleVerified === userDoc.role) {
-      return <Navigate to={`/dashboard/${userDoc.role}`} replace />;
+    // 🛡️ MULTI-ROLE SECURITY: Redirect to dashboard only if role is verified AND completed
+    if (roleVerified && userDoc?.completedRoles?.includes(roleVerified)) {
+      return <Navigate to={`/dashboard/${roleVerified}`} replace />;
     }
     
     // Default: If not verified for this session, force them to Role Selection

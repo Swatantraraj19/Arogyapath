@@ -16,14 +16,21 @@ const ProfileSetup = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
-
-  // 🛡️ MULTI-ROLE NAVIGATION GUARD
-  useEffect(() => {
-    // Only redirect if this SPECIFIC role is already finished
-    if (userDoc?.completedRoles?.includes(role)) {
-      navigate(`/dashboard/${role}`, { replace: true });
-    }
-  }, [userDoc, role, navigate]);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    // Patient Specific
+    age: "",
+    gender: "",
+    bloodGroup: "",
+    location: "",
+    // Doctor Specific
+    specialization: "",
+    experience: "",
+    license: "",
+    clinicName: "",
+    clinicAddress: "",
+  });
 
   // 🌓 Apply Role-Based Theme
   useEffect(() => {
@@ -32,91 +39,111 @@ const ProfileSetup = () => {
     }
   }, [role]);
 
-  const handleImageChange = (e) => {
+  // 🛡️ NAVIGATION GUARD: If already finished this specific role, skip setup
+  useEffect(() => {
+    if (userDoc?.completedRoles?.includes(role)) {
+      navigate(`/dashboard/${role}`, { replace: true });
+    }
+  }, [userDoc, role, navigate]);
+
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        return toast.error(t("profile_setup.error_image_size"));
+      }
       setImage(file);
       setPreview(URL.createObjectURL(file));
-      setErrors(prev => ({ ...prev, photo: null })); // Clear photo error
+      if (errors.photo) setErrors({ ...errors, photo: null });
     }
   };
 
   const validateForm = (data) => {
     const newErrors = {};
-    
-    // 1. Name Validation (Letters and dots only, 3+ chars)
-    if (!data.fullName || !/^[a-zA-Z\s\.]{3,50}$/.test(data.fullName.trim())) {
-      newErrors.fullName = t("profile_setup.error_name");
-    }
+    if (!preview && !image) newErrors.photo = t("profile_setup.error_photo");
+    if (!data.fullName.trim()) newErrors.fullName = t("profile_setup.error_name");
+    if (!data.phone.trim() || !/^[6-9]\d{9}$/.test(data.phone)) newErrors.phone = t("profile_setup.error_phone");
+    if (!data.location.trim()) newErrors.location = t("profile_setup.error_location");
 
-    // 2. Phone Validation (Indian 10-digit)
-    if (!data.phone || !/^[6-9]\d{9}$/.test(data.phone)) {
-      newErrors.phone = t("profile_setup.error_phone");
-    }
-
-    // 3. Photo Validation
-    if (!preview) {
-      newErrors.photo = t("profile_setup.error_photo");
-    }
-
-    // 4. Role-Specific Validations
     if (role === "patient") {
-      const ageNum = parseInt(data.age);
-      if (!data.age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
-        newErrors.age = t("profile_setup.error_age");
-      }
-      if (!data.location || data.location.trim().length < 5) {
-        newErrors.location = t("profile_setup.error_location");
-      } else if (!/[a-zA-Z]/.test(data.location)) {
-        newErrors.location = t("profile_setup.error_invalid");
-      }
-      if (!data.gender) newErrors.gender = t("profile_setup.error_required");
-      if (!data.bloodGroup) newErrors.bloodGroup = t("profile_setup.error_required");
-    } else if (role === "doctor") {
-      if (!data.specialization || !/^[a-zA-Z\s\.]{3,100}$/.test(data.specialization.trim())) {
-        newErrors.specialization = t("profile_setup.error_specialization");
-      }
-      if (!data.experience) {
-        newErrors.experience = t("profile_setup.error_required");
-      } else if (parseInt(data.experience) < 0) {
-        newErrors.experience = t("profile_setup.error_experience");
-      }
-      if (!data.license || data.license.trim().length < 5) {
-        newErrors.license = t("profile_setup.error_license");
-      }
-      
-      if (!data.clinicName || data.clinicName.trim().length < 3) {
-        newErrors.clinicName = t("profile_setup.error_clinic_name");
-      } else if (!/[a-zA-Z]/.test(data.clinicName)) {
-        newErrors.clinicName = t("profile_setup.error_invalid");
-      }
-      
-      if (!data.clinicAddress || data.clinicAddress.trim().length < 10) {
-        newErrors.clinicAddress = t("profile_setup.error_clinic_address");
-      } else if (!/[a-zA-Z]/.test(data.clinicAddress)) {
-        newErrors.clinicAddress = t("profile_setup.error_invalid");
-      }
+      if (!String(data.age).trim()) newErrors.age = t("profile_setup.error_age");
+      if (!data.gender) newErrors.gender = t("profile_setup.error_gender");
+      if (!data.bloodGroup) newErrors.bloodGroup = t("profile_setup.error_blood_group");
+    } else {
+      if (!String(data.specialization).trim()) newErrors.specialization = t("profile_setup.error_specialization");
+      if (!String(data.experience).trim()) newErrors.experience = t("profile_setup.error_experience");
+      if (!String(data.license).trim()) newErrors.license = t("profile_setup.error_license");
+      if (!String(data.clinicName).trim()) newErrors.clinicName = t("profile_setup.error_clinic_name");
+      if (!String(data.clinicAddress).trim()) newErrors.clinicAddress = t("profile_setup.error_clinic_address");
     }
 
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      console.warn("Validation Errors:", newErrors);
+    }
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form State
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    // Patient Specific
-    age: "",
-    gender: "",
-    bloodGroup: "",
-    // Doctor Specific
-    specialization: "",
-    experience: "",
-    license: "",
-    clinicName: "",
-    clinicAddress: "",
-  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentUser) return toast.error("User session not found. Please log in again.");
+    if (!validateForm(formData)) return toast.error(t("profile_setup.error_fix"));
+
+    try {
+      setLoading(true);
+
+      // ☁️ CLOUDINARY UPLOAD
+      let photoUrl = preview;
+      if (image) {
+        toast.loading("Uploading profile photo...", { id: "uploading" });
+        photoUrl = await uploadImageToCloudinary(image);
+        toast.dismiss("uploading");
+      }
+      
+      const profileData = {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        location: formData.location,
+        photoUrl: photoUrl || "",
+        role: role,
+        uid: currentUser.uid,
+        email: currentUser.email,
+        ...(role === "patient" ? {
+          age: formData.age,
+          gender: formData.gender,
+          bloodGroup: formData.bloodGroup
+        } : {
+          specialization: formData.specialization,
+          experience: formData.experience,
+          license: formData.license,
+          clinicName: formData.clinicName,
+          clinicAddress: formData.clinicAddress
+        })
+      };
+
+      // 🔑 VERIFY SESSION
+      localStorage.setItem("roleVerified", role);
+
+      // 1. Save to role-specific collection
+      await setDoc(doc(db, role === "patient" ? "patients" : "doctors", currentUser.uid), profileData);
+      
+      // 2. Update core user doc
+      await setDoc(doc(db, "users", currentUser.uid), {
+        fullName: profileData.fullName,
+        role: role,
+        onboardingComplete: true,
+        completedRoles: arrayUnion(role)
+      }, { merge: true });
+        
+      toast.success(t("profile_setup.success"));
+      navigate(`/dashboard/${role}`, { replace: true });
+    } catch (error) {
+      console.error("Profile Setup Error:", error);
+      toast.error(t("auth.errorUnexpected"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -161,79 +188,10 @@ const ProfileSetup = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!currentUser) return;
 
-    // 🛡️ RUN VALIDATION
-    if (!validateForm(formData)) {
-      toast.error("Please fix the errors in the form before continuing");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // ☁️ CLOUDINARY UPLOAD
-      let uploadedPhotoUrl = preview; // fallback to current preview
-      if (image) {
-        toast.loading("Uploading profile photo...", { id: "uploading" });
-        uploadedPhotoUrl = await uploadImageToCloudinary(image);
-        toast.dismiss("uploading");
-      }
-      
-      const profileData = {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        fullName: formData.fullName,
-        phone: formData.phone,
-        role: role,
-        photoUrl: uploadedPhotoUrl, // 🚀 Permanent Cloudinary Link!
-        updatedAt: serverTimestamp(),
-      };
-
-      if (role === "patient") {
-        Object.assign(profileData, {
-          age: formData.age,
-          gender: formData.gender,
-          bloodGroup: formData.bloodGroup,
-          location: formData.location,
-        });
-      } else {
-        Object.assign(profileData, {
-          specialization: formData.specialization,
-          experience: formData.experience,
-          license: formData.license,
-          clinicName: formData.clinicName,
-          clinicAddress: formData.clinicAddress,
-        });
-      }
-
-      // 1. Save to role-specific collection (e.g., /patients or /doctors)
-      await setDoc(doc(db, role === "patient" ? "patients" : "doctors", currentUser.uid), profileData);
-      
-      // 2. Update core user doc with multi-role support
-      await setDoc(doc(db, "users", currentUser.uid), {
-        role: role, // Last used role
-        completedRoles: arrayUnion(role), 
-        onboardingComplete: true,
-      }, { merge: true });
-      
-      // 🔑 VERIFY SESSION: Now that setup is done, user is verified for this SPECIFIC role
-      localStorage.setItem("roleVerified", role);
-
-      toast.success(t("profile_setup.success"));
-      navigate(`/dashboard/${role}`, { replace: true });
-    } catch (error) {
-      console.error("Profile Setup Error:", error);
-      toast.error(t("auth.errorUnexpected"));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
-    <div className="flex items-center justify-center min-h-[90vh] p-6 animate-in fade-in duration-1000">
+    <div className="flex items-center justify-center min-h-screen p-6 overflow-y-auto">
       <div className="max-w-2xl w-full bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 space-y-8">
         
         {/* HEADER */}
@@ -263,7 +221,7 @@ const ProfileSetup = () => {
               ${role === 'patient' ? 'bg-emerald-600' : 'bg-blue-600'}
             `}>
               <Camera size={16} />
-              <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
             </label>
           </div>
           <span className={`text-[10px] font-bold uppercase tracking-widest ${errors.photo ? 'text-red-500 animate-pulse' : 'text-gray-400'}`}>
@@ -319,6 +277,22 @@ const ProfileSetup = () => {
             {errors.phone && <p className="text-xs text-red-500 font-medium">{errors.phone}</p>}
           </div>
 
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <MapPin size={16} className="text-gray-400" /> {t("profile_setup.location")}
+            </label>
+              <input
+                type="text"
+                name="location"
+                spellCheck="false"
+                placeholder="Lucknow, Uttar Pradesh"
+                value={formData.location}
+                onChange={handleInputChange}
+                className={`input-standard ${errors.location ? 'border-red-500 focus:ring-red-100' : ''}`}
+              />
+            {errors.location && <p className="text-xs text-red-500 font-medium">{errors.location}</p>}
+          </div>
+
           {role === "patient" ? (
             <>
               {/* PATIENT FIELDS */}
@@ -333,21 +307,6 @@ const ProfileSetup = () => {
                   className={`input-standard ${errors.age ? 'border-red-500 focus:ring-red-100' : ''}`}
                 />
                 {errors.age && <p className="text-xs text-red-500 font-medium">{errors.age}</p>}
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <MapPin size={16} className="text-gray-400" /> {t("profile_setup.location")}
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Lucknow, Uttar Pradesh"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className={`input-standard ${errors.location ? 'border-red-500 focus:ring-red-100' : ''}`}
-                />
-                {errors.location && <p className="text-xs text-red-500 font-medium">{errors.location}</p>}
               </div>
 
               <div className="space-y-1">
@@ -452,6 +411,7 @@ const ProfileSetup = () => {
                 <textarea
                   name="clinicAddress"
                   rows="3"
+                  spellCheck="false"
                   placeholder="123, Medical Square, Lucknow..."
                   value={formData.clinicAddress}
                   onChange={handleInputChange}
