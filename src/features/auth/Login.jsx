@@ -10,7 +10,7 @@ import { db } from "../../firebase/config";
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,7 +36,7 @@ const Login = () => {
     const isEmailValid = validateEmail(formData.email);
     const isDomainValid = formData.email ? isAllowedDomain(formData.email) : true;
     const isPasswordValid = formData.password.length >= 6;
-    
+
     if (formData.email && !isEmailValid) {
       setEmailError(t("auth.invalidEmail"));
     } else if (formData.email && !isDomainValid) {
@@ -67,7 +67,7 @@ const Login = () => {
       console.error("Login Error:", error.code);
       // 🛡️ SECURITY BEST PRACTICE: Grouping credential errors to prevent account enumeration
       const credentialErrors = ['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'];
-      
+
       if (credentialErrors.includes(error.code)) {
         toast.error(t("auth.errorInvalidCredential"));
       } else {
@@ -134,7 +134,7 @@ const Login = () => {
   return (
     <div className="flex items-center justify-center min-h-[90vh] p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6 animate-in fade-in duration-1000">
-        
+
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-bold text-gray-900">
             Login
@@ -164,8 +164,8 @@ const Login = () => {
           <div className="space-y-1">
             <div className="flex justify-between items-center">
               <label className="text-sm font-semibold text-gray-700">{t("auth.password")}</label>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleForgotPassword}
                 className="text-xs font-semibold text-green-600 hover:text-green-700"
               >
@@ -218,7 +218,7 @@ const Login = () => {
         </button>
 
         <div className="text-center pt-2">
-          <button 
+          <button
             onClick={() => navigate("/signup")}
             className="text-sm font-semibold text-gray-600 hover:text-green-600 transition"
           >
@@ -227,7 +227,7 @@ const Login = () => {
         </div>
 
         <div className="text-center">
-          <button 
+          <button
             onClick={() => navigate("/auth-choice")}
             className="text-xs font-semibold text-gray-400 hover:text-green-600 transition"
           >

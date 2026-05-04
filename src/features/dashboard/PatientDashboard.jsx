@@ -90,6 +90,11 @@ const PatientDashboard = () => {
   };
 
   // 🔗 NAVIGATION CONFIG
+  // 📌 Auto Scroll to Top on Tab Change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   const navItems = [
     { id: "overview", icon: <LayoutDashboard size={20} />, label: t("dashboard.overview") },
     { id: "symptom", icon: <BrainCircuit size={20} />, label: t("dashboard.symptom_checker") },
@@ -111,8 +116,8 @@ const PatientDashboard = () => {
       welcomeName={profileData?.fullName?.split(" ")[0] || userDoc?.fullName?.split(" ")[0] || "Friend"}
     >
       {/* 🧩 TAB CONTENT */}
-      {activeTab === "overview" && <PatientOverview t={t} userDoc={profileData || userDoc} />}
-      {activeTab === "symptom" && <SymptomChecker t={t} />}
+      {activeTab === "overview" && <PatientOverview t={t} userDoc={profileData || userDoc} setActiveTab={setActiveTab} />}
+      {activeTab === "symptom" && <SymptomChecker t={t} setActiveTab={setActiveTab} />}
       {activeTab === "appointments" && <AppointmentList role="patient" appointments={[]} />}
       {activeTab === "profile" && <ProfileUpdate role="patient" existingData={profileData || userDoc} />}
 

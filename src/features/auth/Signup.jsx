@@ -10,7 +10,7 @@ import { Eye, EyeOff } from "lucide-react";
 const Signup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,7 +36,7 @@ const Signup = () => {
     const isEmailValid = validateEmail(formData.email);
     const isDomainValid = formData.email ? isAllowedDomain(formData.email) : true;
     const isPasswordValid = formData.password.length >= 6;
-    
+
     // Email Check
     if (formData.email && !isEmailValid) {
       setEmailError(t("auth.invalidEmail"));
@@ -123,7 +123,7 @@ const Signup = () => {
   return (
     <div className="flex items-center justify-center min-h-[90vh] p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6 animate-in fade-in duration-1000">
-        
+
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-bold text-gray-900">
             Sign Up
@@ -203,7 +203,7 @@ const Signup = () => {
         </button>
 
         <div className="text-center pt-2">
-          <button 
+          <button
             onClick={() => navigate("/login")}
             className="text-sm font-semibold text-gray-600 hover:text-green-600 transition"
           >
@@ -212,7 +212,7 @@ const Signup = () => {
         </div>
 
         <div className="text-center">
-          <button 
+          <button
             onClick={() => navigate("/auth-choice")}
             className="text-xs font-semibold text-gray-400 hover:text-green-600 transition"
           >

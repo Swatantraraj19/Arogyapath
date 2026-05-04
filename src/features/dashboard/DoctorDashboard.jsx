@@ -86,6 +86,11 @@ const DoctorDashboard = () => {
   };
 
   // 🔗 NAVIGATION CONFIG
+  // 📌 Auto Scroll to Top on Tab Change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   const navItems = [
     { id: "overview", icon: <LayoutDashboard size={20} />, label: t("dashboard.overview") },
     { id: "requests", icon: <Users size={20} />, label: "New Requests" },
