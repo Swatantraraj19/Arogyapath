@@ -116,7 +116,7 @@ const DoctorDashboard = () => {
       {activeTab === "profile" && <ProfileUpdate role="doctor" existingData={profileData || userDoc} />}
 
       {(activeTab === "requests" || activeTab === "appointments" || activeTab === "history") && (
-        <AppointmentList role="doctor" appointments={[]} />
+        <AppointmentList role="doctor" appointments={[]} t={t} />
       )}
 
       {activeTab === "settings" && (

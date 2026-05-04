@@ -17,17 +17,17 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
 
       {/* 🚀 SMART CHECKER HERO SECTION */}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-900 rounded-[2rem] p-8 md:p-10 text-white relative overflow-hidden shadow-xl shadow-emerald-500/10">
-        <div className="relative z-10 flex flex-col xl:flex-row items-center gap-8">
+        <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
           <div className="flex-1 space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs font-bold">
               <ClipboardCheck size={14} className="text-emerald-300" />
-              <span>Smart Symptom Checker Ready</span>
+              <span>{t('symptom_checker.ready')}</span>
             </div>
             <h3 className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
-              Feeling unwell? <br /> Analyze your symptoms.
+              {t('symptom_checker.feeling_unwell')} <br /> {t('symptom_checker.analyze_your_symptoms')}
             </h3>
             <p className="text-emerald-100/80 text-lg font-medium leading-relaxed max-w-lg">
-              Get instant medical insights by describing your condition. Our smart assistant helps you understand your symptoms in seconds.
+              {t('symptom_checker.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <button 

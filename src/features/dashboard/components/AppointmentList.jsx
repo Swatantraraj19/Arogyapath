@@ -1,13 +1,14 @@
+
 import React from "react";
 import { Calendar, Clock, User, ChevronRight } from "lucide-react";
 
-const AppointmentList = ({ role = "patient", appointments = [] }) => {
+const AppointmentList = ({ role = "patient", appointments = [], t }) => {
   return (
     <div className="space-y-8 animate-in slide-in-from-right-8 duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-gray-900">Your Appointments</h2>
-          <p className="text-gray-400 font-bold mt-1">Manage your upcoming and past consultations</p>
+          <h2 className="text-3xl font-black text-gray-900">{t('appointments.title')}</h2>
+          <p className="text-gray-400 font-bold mt-1">{t('appointments.subtitle')}</p>
         </div>
       </div>
 
@@ -17,16 +18,16 @@ const AppointmentList = ({ role = "patient", appointments = [] }) => {
             <Calendar size={48} />
           </div>
           <div className="space-y-2">
-            <p className="text-xl font-black text-gray-900">No appointments found</p>
-            <p className="text-gray-400 font-medium max-w-xs mx-auto">When you book a consultation, it will appear here in real-time.</p>
+            <p className="text-xl font-black text-gray-900">{t('appointments.empty_title')}</p>
+            <p className="text-gray-400 font-medium max-w-xs mx-auto">{t('appointments.empty_desc')}</p>
           </div>
           <button className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95">
-            Book My First Appointment
+            {t('appointments.book_first')}
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {/* Real data mapping will go here in the next step */}
+          {/* Table or Card view for real data mapping */}
         </div>
       )}
     </div>

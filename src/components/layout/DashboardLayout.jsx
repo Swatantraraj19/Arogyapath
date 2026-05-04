@@ -1,6 +1,7 @@
 
-import React, { useState } from "react";
-import { Menu, X, Bell } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Menu, X, Bell, Languages, ChevronDown, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 
 const DashboardLayout = ({
@@ -14,6 +15,31 @@ const DashboardLayout = ({
   welcomeName
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const { i18n } = useTranslation();
+  const dropdownRef = useRef(null);
+
+  const languages = [
+    { code: "en", label: "English", flag: "EN" },
+    { code: "hi", label: "हिन्दी", flag: "HI" }
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const changeLanguage = (code) => {
+    i18n.changeLanguage(code);
+    setIsLangOpen(false);
+  };
+
+  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden font-sans">
@@ -49,13 +75,45 @@ const DashboardLayout = ({
             <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
               Hello, <span className={`text-${roleColor}-600`}>{welcomeName}</span>
             </h2>
-            {/* <p className="text-gray-400 font-semibold mt-3 flex items-center gap-2">
-              <span className={`w-2 h-2 bg-${roleColor}-500 rounded-full animate-pulse`}></span>
-              Live health monitoring active
-            </p> */}
           </div>
 
           <div className="flex items-center gap-5 animate-in slide-in-from-right duration-700">
+            
+            {/* 🌐 LANGUAGE DROPDOWN */}
+            <div className="relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className={`flex items-center gap-2 p-2.5 bg-white border ${isLangOpen ? `border-${roleColor}-200 ring-4 ring-${roleColor}-50` : 'border-gray-100'} rounded-2xl text-gray-600 transition-all shadow-sm group active:scale-95`}
+              >
+                <div className={`w-8 h-8 rounded-xl bg-${roleColor}-50 flex items-center justify-center text-${roleColor}-600`}>
+                  <Languages size={18} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest px-1">
+                  {currentLang.flag}
+                </span>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-300 ${isLangOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isLangOpen && (
+                <div className="absolute top-full right-0 mt-3 w-44 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-200/50 p-2 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => changeLanguage(lang.code)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                        i18n.language === lang.code 
+                          ? `bg-${roleColor}-50 text-${roleColor}-600` 
+                          : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{lang.label}</span>
+                      {i18n.language === lang.code && <Check size={16} strokeWidth={3} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button className={`p-4 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-${roleColor}-600 transition-all shadow-sm relative group`}>
               <Bell size={22} />
               <span className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>

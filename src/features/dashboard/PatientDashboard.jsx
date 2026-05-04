@@ -118,7 +118,7 @@ const PatientDashboard = () => {
       {/* 🧩 TAB CONTENT */}
       {activeTab === "overview" && <PatientOverview t={t} userDoc={profileData || userDoc} setActiveTab={setActiveTab} />}
       {activeTab === "symptom" && <SymptomChecker t={t} setActiveTab={setActiveTab} />}
-      {activeTab === "appointments" && <AppointmentList role="patient" appointments={[]} />}
+      {activeTab === "appointments" && <AppointmentList role="patient" appointments={[]} t={t} />}
       {activeTab === "profile" && <ProfileUpdate role="patient" existingData={profileData || userDoc} />}
 
       {/* 🚧 COMING SOON SECTIONS */}
