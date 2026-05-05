@@ -24,6 +24,8 @@ const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [profileData, setProfileData] = useState(null);
   
+  const [selectedCity, setSelectedCity] = useState("Patna");
+
   // 🚀 SCROLL TO TOP ON MOUNT
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -110,6 +112,8 @@ const DoctorDashboard = () => {
       roleTitle="DOCTOR ACCOUNT"
       roleColor="blue"
       welcomeName={`Dr. ${(profileData?.fullName || userDoc?.fullName || "Consultant").split(" ")[0]}`}
+      selectedCity={selectedCity}
+      setSelectedCity={setSelectedCity}
     >
       {/* 🧩 TAB CONTENT */}
       {activeTab === "overview" && <DoctorOverview t={t} userDoc={profileData || userDoc} />}

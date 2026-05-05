@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Menu, X, Bell, Languages, ChevronDown, Check } from "lucide-react";
+import { Menu, X, Bell, Languages, ChevronDown, Check, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 
@@ -12,12 +12,17 @@ const DashboardLayout = ({
   userDoc,
   roleTitle,
   roleColor = "emerald",
-  welcomeName
+  welcomeName,
+  selectedCity = "Patna",
+  setSelectedCity,
+  cities = ["Patna", "Delhi", "Lucknow", "Mumbai", "Bangalore"]
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isLocOpen, setIsLocOpen] = useState(false);
   const { i18n } = useTranslation();
   const dropdownRef = useRef(null);
+  const locRef = useRef(null);
 
   const languages = [
     { code: "en", label: "English", flag: "EN" },
@@ -28,6 +33,9 @@ const DashboardLayout = ({
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsLangOpen(false);
+      }
+      if (locRef.current && !locRef.current.contains(event.target)) {
+        setIsLocOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -79,6 +87,41 @@ const DashboardLayout = ({
 
           <div className="flex items-center gap-5 animate-in slide-in-from-right duration-700">
             
+            {/* 📍 LOCATION DROPDOWN */}
+            <div className="relative" ref={locRef}>
+              <button 
+                onClick={() => setIsLocOpen(!isLocOpen)}
+                className={`flex items-center gap-2 p-2.5 bg-white border ${isLocOpen ? `border-blue-200 ring-4 ring-blue-50` : 'border-gray-100'} rounded-2xl text-gray-600 transition-all shadow-sm group active:scale-95`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <MapPin size={18} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest px-1">
+                  {selectedCity}
+                </span>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-300 ${isLocOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isLocOpen && (
+                <div className="absolute top-full right-0 mt-3 w-48 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-200/50 p-2 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  {cities.map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => { setSelectedCity(city); setIsLocOpen(false); }}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                        selectedCity === city 
+                          ? `bg-blue-50 text-blue-600` 
+                          : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{city}</span>
+                      {selectedCity === city && <Check size={14} strokeWidth={3} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* 🌐 LANGUAGE DROPDOWN */}
             <div className="relative" ref={dropdownRef}>
               <button 

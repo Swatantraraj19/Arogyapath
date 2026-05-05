@@ -1,9 +1,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { BrainCircuit, MessageSquare, Paperclip, Image as ImageIcon, X, FileText, Activity, AlertCircle, Sparkles, ChevronRight, Mic, MicOff } from "lucide-react";
+import { BrainCircuit, MessageSquare, Paperclip, Image as ImageIcon, X, FileText, Activity, AlertCircle, Sparkles, ChevronRight, Mic, MicOff, Stethoscope, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const SymptomChecker = ({ t, setActiveTab }) => {
+const SymptomChecker = ({ t, setActiveTab, externalCity = "Patna" }) => {
+  const doctors = [
+    { id: 1, name: "Dr. Sameer Sharma", specialty: "Cardiologist", experience: "12 yrs", rating: 4.8, reviews: 124, clinicFee: "₹800", onlineFee: "₹600", clinicName: "Arogya Heart Care", address: "12/A, Medical Square, Lucknow", city: "Lucknow", phone: "+91 98765 43210" },
+    { id: 2, name: "Dr. Anjali Gupta", specialty: "Dermatologist", experience: "8 yrs", rating: 4.9, reviews: 89, clinicFee: "₹1000", onlineFee: "₹750", clinicName: "Glow Skin Clinic", address: "45, Fashion Street, Delhi", city: "Delhi", phone: "+91 91234 56789" },
+    { id: 3, name: "Dr. Rajesh Varma", specialty: "General Physician", experience: "15 yrs", rating: 4.7, reviews: 210, clinicFee: "₹500", onlineFee: "₹400", clinicName: "Patna Central Clinic", address: "Boring Road, Patna", city: "Patna", phone: "+91 88888 77777" },
+    { id: 4, name: "Dr. Priya Iyer", specialty: "Pediatrician", experience: "10 yrs", rating: 4.9, reviews: 156, clinicFee: "₹700", onlineFee: "₹550", clinicName: "Arogya Kids Patna", address: "Kankarbagh Main Rd, Patna", city: "Patna", phone: "+91 77665 54433" },
+    { id: 5, name: "Dr. Kabir Singh", specialty: "Orthopedic", experience: "14 yrs", rating: 4.6, reviews: 340, clinicFee: "₹900", onlineFee: "₹650", clinicName: "Bone & Joint Centre", address: "MG Road, Indiranagar, Bangalore", city: "Bangalore", phone: "+91 99009 90099" },
+  ];
   const [symptomText, setSymptomText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [assessment, setAssessment] = useState(null);
@@ -86,7 +93,8 @@ const SymptomChecker = ({ t, setActiveTab }) => {
         title: t('symptom_checker.assessment_summary'),
         suggestion: "Our system identifies patterns consistent with a seasonal reaction. Your description suggest localized inflammation.",
         precautions: ["Hydrate", "Rest", "Monitor"],
-        recommendation: "Book a consultation with a General Physician."
+        recommendation: "Book a consultation with a General Physician.",
+        suggestedSpecialty: "General Physician"
       });
     }, 3000);
   };
@@ -245,20 +253,34 @@ const SymptomChecker = ({ t, setActiveTab }) => {
                     ))}
                   </ul>
                 </div>
-                <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
-                  <h5 className="font-black text-emerald-700 uppercase tracking-widest text-[9px] mb-2">{t('symptom_checker.recommendation')}</h5>
-                  <p className="text-emerald-900 font-bold text-base leading-relaxed">{assessment.recommendation}</p>
-                </div>
               </div>
 
-              <div className="pt-6 border-t border-gray-100">
-                <button 
-                  onClick={() => setActiveTab("appointments")}
-                  className="bg-gray-900 text-white px-8 py-4 rounded-xl font-black text-base hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 shadow-lg shadow-gray-200 cursor-pointer w-full sm:w-auto justify-center"
-                >
-                  {t('symptom_checker.book_specialist')}
-                  <ChevronRight size={18} />
-                </button>
+              <div className="pt-8 border-t border-gray-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+                  {/* OPTION 1: AI SUGGESTION */}
+                  <button 
+                    onClick={() => setActiveTab("appointments", assessment.suggestedSpecialty)}
+                    className="flex flex-col items-center justify-center p-4 bg-emerald-600 text-white rounded-[1.5rem] hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/10 active:scale-[0.98] text-center h-full"
+                  >
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-70 mb-2">Recommended</span>
+                    <h5 className="text-base font-black leading-tight mb-4">Consult {assessment.suggestedSpecialty}</h5>
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-[9px] font-black uppercase tracking-widest">
+                      Book Now <ChevronRight size={12} />
+                    </div>
+                  </button>
+
+                  {/* OPTION 2: MANUAL BOOKING */}
+                  <button 
+                    onClick={() => setActiveTab("appointments", "")}
+                    className="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-50 text-gray-900 rounded-[1.5rem] hover:border-emerald-200 hover:shadow-md transition-all active:scale-[0.98] text-center h-full"
+                  >
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Manual Path</span>
+                    <h5 className="text-base font-black leading-tight mb-4">Search All Doctors Manually</h5>
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest">
+                      Book Now <ChevronRight size={12} />
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

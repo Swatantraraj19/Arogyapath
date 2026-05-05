@@ -136,7 +136,9 @@
     "subtitle": "Manage your upcoming and past consultations",
     "empty_title": "No appointments found",
     "empty_desc": "When you book a consultation, it will appear here in real-time.",
-    "book_first": "Book My First Appointment"
+    "book_first": "Book My First Appointment",
+    "my_bookings": "My Bookings",
+    "find_doctors": "Find Doctors"
   },
   "health_tips": [
     "Drinking water 30 minutes before a meal can improve your metabolism.",
