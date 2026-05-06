@@ -34,6 +34,7 @@ export const logIn = async (email, password) => {
 // Sign out
 export const logOut = async () => {
   try {
+    localStorage.removeItem("roleVerified");
     await signOut(auth);
   } catch (error) {
     throw error;

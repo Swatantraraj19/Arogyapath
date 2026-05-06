@@ -69,10 +69,20 @@ const PatientDashboard = () => {
   const handleRoleSwitch = async () => {
     try {
       const targetRole = "doctor";
-      await updateDoc(doc(db, "users", currentUser.uid), { role: targetRole });
-      localStorage.setItem("roleVerified", targetRole);
-      navigate("/dashboard/doctor");
+      const isCompleted = userDoc?.completedRoles?.includes(targetRole);
+
+      if (isCompleted) {
+        // 🛡️ AUTH SYNC: Set verification and update cloud role
+        localStorage.setItem("roleVerified", targetRole);
+        await updateDoc(doc(db, "users", currentUser.uid), { role: targetRole });
+        navigate("/dashboard/doctor");
+      } else {
+        // 📝 ONBOARDING: Redirect to setup if first time
+        toast(t("dashboard.switch_to_doctor") + "...", { icon: "🔄" });
+        navigate(`/profile-setup/${targetRole}`);
+      }
     } catch (error) {
+      console.error("Switch failed:", error);
       toast.error("Failed to switch role");
     }
   };
