@@ -13,17 +13,17 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
   const firstName = userDoc?.fullName?.split(" ")[0] || "there";
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700 pb-10">
+    <div className="space-y-10 animate-in fade-in duration-700 pb-10">
 
       {/* 🚀 SMART CHECKER HERO SECTION */}
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-900 rounded-[2rem] p-8 md:p-10 text-white relative overflow-hidden shadow-xl shadow-emerald-500/10">
+      <div className="bg-gradient-to-br from-emerald-600 to-teal-900 rounded-[2rem] p-7 md:p-6 text-white relative overflow-hidden shadow-xl shadow-emerald-500/10">
         <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
           <div className="flex-1 space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs font-bold">
               <ClipboardCheck size={14} className="text-emerald-300" />
               <span>{t('symptom_checker.ready')}</span>
             </div>
-            <h3 className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
+            <h3 className="text-3xl md:text-[2.35rem] font-black leading-tight tracking-tight">
               {t('symptom_checker.feeling_unwell')} <br /> {t('symptom_checker.analyze_your_symptoms')}
             </h3>
             <p className="text-emerald-100/80 text-lg font-medium leading-relaxed max-w-lg">
@@ -32,17 +32,17 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <button 
                 onClick={() => setActiveTab("symptom")}
-                className="w-full sm:w-auto group bg-white text-emerald-900 px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-900/30 hover:shadow-2xl hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
+                className="w-full sm:w-auto group bg-white text-emerald-900 px-7 py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-900/30 hover:shadow-2xl hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
-                <BrainCircuit size={24} className="group-hover:rotate-12 transition-transform" />
+                <BrainCircuit size={22} className="group-hover:rotate-12 transition-transform" />
                 Check Symptoms
               </button>
               
               <button 
                 onClick={() => setActiveTab("appointments")}
-                className="w-full sm:w-auto group bg-emerald-500/20 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-2xl font-black text-lg hover:bg-emerald-500/40 hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
+                className="w-full sm:w-auto group bg-emerald-500/20 backdrop-blur-md text-white border border-white/30 px-7 py-4 rounded-2xl font-black text-lg hover:bg-emerald-500/40 hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
-                <PlusCircle size={24} className="group-hover:rotate-90 transition-transform duration-500" />
+                <PlusCircle size={22} className="group-hover:rotate-90 transition-transform duration-500" />
                 Book Appointment
               </button>
             </div>
@@ -60,16 +60,16 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
       <div className="grid grid-cols-1 gap-8">
         
         {/* 💡 DAILY HEALTH TIP */}
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-[3rem] border border-amber-100 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
-          <div className="space-y-6 relative z-10">
-            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-[1.5rem] flex items-center justify-center">
-              <Lightbulb size={32} />
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-7 rounded-[3rem] border border-amber-100 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
+          <div className="space-y-5 relative z-10">
+            <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-[1.3rem] flex items-center justify-center">
+              <Lightbulb size={28} />
             </div>
             <div>
               <div className="inline-block px-3 py-1 bg-amber-200/50 text-amber-800 text-[10px] font-black uppercase tracking-widest rounded-full mb-3">
                 Daily Insight
               </div>
-              <h4 className="text-2xl font-black text-gray-900 mb-4 leading-tight">
+              <h4 className="text-[1.375rem] font-black text-gray-900 mb-3 leading-tight">
                 {dailyTip}
               </h4>
             </div>

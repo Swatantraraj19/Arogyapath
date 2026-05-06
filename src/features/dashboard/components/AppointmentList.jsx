@@ -1,15 +1,16 @@
-
 import React, { useState, useRef, useEffect } from "react";
-import { Calendar as CalendarIcon, Clock, User, ChevronRight, Search, Star, MapPin, Filter, Stethoscope, Mic, MicOff, X, AlertCircle, CheckCircle2, Video, Building2, Phone, Hash } from "lucide-react";
+import { Calendar, Calendar as CalendarIcon, Clock, User, ChevronRight, Search, Star, MapPin, Filter, Stethoscope, Mic, MicOff, X, AlertCircle, CheckCircle2, Video, Building2, Phone, Hash, Navigation } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useLocation } from "../../../context/LocationContext";
 
-const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity = "Patna" }) => {
+const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
+  const { selectedCity: externalCity, handleDetectLocation: onDetectLocation } = useLocation();
   const [activeSubTab, setActiveSubTab] = useState("find");
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [isListening, setIsListening] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  
+
   // 🕒 Booking States
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -22,7 +23,7 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
   const [ratingValue, setRatingValue] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingAppointmentId, setRatingAppointmentId] = useState(null);
-  
+
   const recognitionRef = useRef(null);
 
   // Mock Appointments for "My Bookings"
@@ -104,7 +105,7 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
 
   return (
     <div className="space-y-8 animate-in slide-in-from-right-8 duration-700 pb-20">
-      
+
       {/* HEADER SECTION */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div className="space-y-1">
@@ -124,12 +125,12 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
             {/* Search Input */}
             <div className="relative group flex-1 w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
-              <input 
-                type="text" 
-                placeholder={isListening ? "Listening..." : "Search doctor or specialty..."} 
-                value={searchQuery} 
-                onChange={(e) => setSearchQuery(e.target.value)} 
-                className="w-full pl-12 pr-12 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 outline-none transition-all font-bold text-sm" 
+              <input
+                type="text"
+                placeholder={isListening ? "Listening..." : "Search doctor or specialty..."}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-12 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 outline-none transition-all font-bold text-sm"
               />
             </div>
           </div>
@@ -137,69 +138,93 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
       </div>
 
       {activeSubTab === "find" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {doctors
-            .filter(d => (externalCity === "All" || d.city === externalCity))
-            .filter(d => 
-              d.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-              d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
-            ).map((doc) => (
-            <div key={doc.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative flex flex-col justify-between h-full">
-              <div>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all overflow-hidden shadow-inner">
-                    <User size={28} />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[9px] font-black uppercase tracking-wider">{doc.specialty}</div>
-                      <div className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[9px] font-black uppercase tracking-wider">
-                        <MapPin size={8} className="mr-1" /> {doc.city}
+        !externalCity ? (
+          <div className="flex flex-col items-center justify-center py-15 px-6 bg-white rounded-[40px] border-2 border-dashed border-gray-100 animate-in fade-in zoom-in duration-500 text-center col-span-full">
+            <div className="w-23 h-20 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-6 animate-pulse">
+              <MapPin size={40} />
+            </div>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Location Required</h3>
+            <p className="text-gray-500 font-bold max-w-sm mb-8">
+              Please select your city to discover the best doctors and specialists near you.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-red-900/10 animate-bounce">
+                Click "Set Location" Above 👆
+              </div>
+              <button
+                onClick={onDetectLocation}
+                className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl font-black text-sm hover:border-emerald-200 hover:text-emerald-600 transition-all shadow-lg shadow-gray-200/50 group"
+              >
+                <Navigation size={16} className="group-hover:rotate-45 transition-transform" />
+                Detect Automatically
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {doctors
+              .filter(d => (externalCity === "All" || d.city === externalCity))
+              .filter(d =>
+                d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+              ).map((doc) => (
+                <div key={doc.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative flex flex-col justify-between h-full">
+                  <div>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all overflow-hidden shadow-inner">
+                        <User size={28} />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <div className="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[9px] font-black uppercase tracking-wider">{doc.specialty}</div>
+                          <div className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[9px] font-black uppercase tracking-wider">
+                            <MapPin size={8} className="mr-1" /> {doc.city}
+                          </div>
+                        </div>
+                        <h4 className="text-lg font-black text-gray-900 group-hover:text-emerald-600 transition-colors leading-tight">{doc.name}</h4>
                       </div>
                     </div>
-                    <h4 className="text-lg font-black text-gray-900 group-hover:text-emerald-600 transition-colors leading-tight">{doc.name}</h4>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between py-3 border-y border-gray-50 mb-4">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Rating</span>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Star size={11} className="text-amber-400 fill-amber-400" />
-                      <span className="text-xs font-black text-gray-700">{doc.rating}</span>
+                    <div className="flex items-center justify-between py-3 border-y border-gray-50 mb-4">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Rating</span>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star size={11} className="text-amber-400 fill-amber-400" />
+                          <span className="text-xs font-black text-gray-700">{doc.rating}</span>
+                        </div>
+                      </div>
+                      <div className="w-px h-6 bg-gray-100"></div>
+                      <div className="flex flex-col items-end text-right">
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Experience</span>
+                        <span className="text-xs font-black text-gray-700 mt-0.5">{doc.experience}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="w-px h-6 bg-gray-100"></div>
-                  <div className="flex flex-col items-end text-right">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Experience</span>
-                    <span className="text-xs font-black text-gray-700 mt-0.5">{doc.experience}</span>
-                  </div>
-                </div>
 
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-gray-50 flex items-center justify-center text-emerald-500 shrink-0">
-                      <Building2 size={12} />
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-gray-50 flex items-center justify-center text-emerald-500 shrink-0">
+                          <Building2 size={12} />
+                        </div>
+                        <span className="text-[11px] font-bold text-gray-600 truncate">{doc.clinicName}</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
+                          <MapPin size={12} />
+                        </div>
+                        <span className="text-[10px] font-medium text-gray-400 leading-relaxed line-clamp-2">{doc.address}</span>
+                      </div>
                     </div>
-                    <span className="text-[11px] font-bold text-gray-600 truncate">{doc.clinicName}</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
-                      <MapPin size={12} />
-                    </div>
-                    <span className="text-[10px] font-medium text-gray-400 leading-relaxed line-clamp-2">{doc.address}</span>
-                  </div>
+                  <button onClick={() => handleBookClick(doc)} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-black text-xs hover:bg-emerald-600 transition-all active:scale-95 shadow-lg shadow-gray-200">Book Appointment</button>
                 </div>
-              </div>
-              <button onClick={() => handleBookClick(doc)} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-black text-xs hover:bg-emerald-600 transition-all active:scale-95 shadow-lg shadow-gray-200">Book Appointment</button>
-            </div>
-          ))}
-        </div>
+              ))}
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {myBookings.map(app => (
-            <div 
-              key={app.id} 
+            <div
+              key={app.id}
               onClick={() => handleViewBooking(app)}
               className={`bg-white p-5 rounded-3xl border border-gray-100 flex items-center justify-between gap-4 hover:shadow-xl hover:-translate-y-1 cursor-pointer transition-all ${app.status === 'cancelled' ? 'opacity-60' : ''}`}
             >
@@ -212,13 +237,13 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
                   <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{app.date} • {app.time}</p>
                 </div>
               </div>
-              
+
               <div className="flex flex-col items-end gap-2 shrink-0 min-w-[110px]">
                 {app.status === 'completed' ? (
                   <>
                     <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">Completed</span>
                     {!app.hasRated ? (
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); openRatingModal(app.id); }}
                         className="text-[10px] font-black text-white bg-amber-500 px-4 py-1.5 rounded-xl uppercase tracking-widest hover:bg-amber-600 transition-all shadow-md shadow-amber-900/10 active:scale-95"
                       >
@@ -233,7 +258,7 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
                 ) : (
                   <>
                     <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-blue-100">Upcoming</span>
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleCancelAppointment(app.id); }}
                       className="text-[9px] font-black text-gray-400 hover:text-red-500 hover:bg-red-50 px-3 py-1 rounded-lg uppercase tracking-widest transition-all"
                     >
@@ -273,11 +298,11 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
               <div className="space-y-6">
                 <div className="flex items-center justify-between"><h3 className="text-2xl font-black text-gray-900">Confirm Appointment</h3><button onClick={() => setIsBookingModalOpen(false)} className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500"><X size={20} /></button></div>
                 <div className="space-y-3">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Consultation Mode</p>
-                   <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => setConsultationMode("clinic")} className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-black text-xs ${consultationMode === "clinic" ? 'bg-emerald-50 border-emerald-600 text-emerald-700' : 'bg-white border-gray-100 text-gray-500'}`}><Building2 size={18} /> Clinic Visit</button>
-                      <button onClick={() => setConsultationMode("video")} className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-black text-xs ${consultationMode === "video" ? 'bg-blue-50 border-blue-600 text-blue-700' : 'bg-white border-gray-100 text-gray-500'}`}><Video size={18} /> Online Video</button>
-                   </div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Consultation Mode</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => setConsultationMode("clinic")} className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-black text-xs ${consultationMode === "clinic" ? 'bg-emerald-50 border-emerald-600 text-emerald-700' : 'bg-white border-gray-100 text-gray-500'}`}><Building2 size={18} /> Clinic Visit</button>
+                    <button onClick={() => setConsultationMode("video")} className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-black text-xs ${consultationMode === "video" ? 'bg-blue-50 border-blue-600 text-blue-700' : 'bg-white border-gray-100 text-gray-500'}`}><Video size={18} /> Online Video</button>
+                  </div>
                 </div>
                 <div className="space-y-3">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Date</p>
@@ -308,38 +333,38 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "", externalCity
                   <h3 className="text-3xl font-black text-gray-900">Booking Confirmed!</h3>
                   <p className="text-gray-500 font-medium">Your appointment with <span className="font-bold text-gray-900">{selectedDoctor?.name}</span> is confirmed.</p>
                 </div>
-                
+
                 <div className="bg-gray-50 p-6 rounded-[2rem] space-y-4 border border-gray-100 text-left">
-                   <div className="flex items-center justify-between text-xs font-bold border-b border-gray-200 pb-3">
-                     <span className="text-gray-400 flex items-center gap-2"><Hash size={14}/> Booking ID</span>
-                     <span className="text-emerald-600 font-black tracking-widest">{currentBookingId}</span>
-                   </div>
-                   <div className="space-y-3">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-gray-400">Date & Time</span>
-                        <span className="text-gray-900">{selectedDate}, {selectedSlot}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-gray-400">Consultation Mode</span>
-                        <span className={`px-3 py-1 rounded-full text-[10px] ${consultationMode === 'clinic' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{consultationMode === 'clinic' ? 'Clinic Visit' : 'Video Consultation'}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-gray-400">Clinic Name</span>
-                        <span className="text-gray-900">{selectedDoctor?.clinicName}</span>
-                      </div>
-                      <div className="flex items-start justify-between text-xs font-bold pt-1">
-                        <span className="text-gray-400 flex items-center gap-2 shrink-0"><MapPin size={14} className="text-emerald-500"/> Clinic Address</span>
-                        <span className="text-gray-900 text-right leading-relaxed max-w-[60%]">{selectedDoctor?.address}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-bold pt-1">
-                        <span className="text-gray-400 flex items-center gap-2"><Phone size={14} className="text-emerald-500"/> Contact Number</span>
-                        <span className="text-gray-900 font-black">{selectedDoctor?.phone}</span>
-                      </div>
-                   </div>
-                   <div className="flex items-center justify-between text-xs font-bold pt-4 border-t border-gray-200">
-                     <span className="text-gray-400">Consultation Fee</span>
-                     <span className="text-emerald-600 font-black">{consultationMode === "clinic" ? selectedDoctor?.clinicFee : selectedDoctor?.onlineFee} Paid</span>
-                   </div>
+                  <div className="flex items-center justify-between text-xs font-bold border-b border-gray-200 pb-3">
+                    <span className="text-gray-400 flex items-center gap-2"><Hash size={14} /> Booking ID</span>
+                    <span className="text-emerald-600 font-black tracking-widest">{currentBookingId}</span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-gray-400">Date & Time</span>
+                      <span className="text-gray-900">{selectedDate}, {selectedSlot}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-gray-400">Consultation Mode</span>
+                      <span className={`px-3 py-1 rounded-full text-[10px] ${consultationMode === 'clinic' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{consultationMode === 'clinic' ? 'Clinic Visit' : 'Video Consultation'}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-gray-400">Clinic Name</span>
+                      <span className="text-gray-900">{selectedDoctor?.clinicName}</span>
+                    </div>
+                    <div className="flex items-start justify-between text-xs font-bold pt-1">
+                      <span className="text-gray-400 flex items-center gap-2 shrink-0"><MapPin size={14} className="text-emerald-500" /> Clinic Address</span>
+                      <span className="text-gray-900 text-right leading-relaxed max-w-[60%]">{selectedDoctor?.address}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-bold pt-1">
+                      <span className="text-gray-400 flex items-center gap-2"><Phone size={14} className="text-emerald-500" /> Contact Number</span>
+                      <span className="text-gray-900 font-black">{selectedDoctor?.phone}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs font-bold pt-4 border-t border-gray-200">
+                    <span className="text-gray-400">Consultation Fee</span>
+                    <span className="text-emerald-600 font-black">{consultationMode === "clinic" ? selectedDoctor?.clinicFee : selectedDoctor?.onlineFee} Paid</span>
+                  </div>
                 </div>
 
                 <button onClick={() => setIsBookingModalOpen(false)} className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black hover:bg-emerald-600 transition-all active:scale-95">Close</button>

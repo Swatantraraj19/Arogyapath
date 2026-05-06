@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Menu, X, Bell, Languages, ChevronDown, Check, MapPin } from "lucide-react";
+import { Menu, X, Bell, Languages, ChevronDown, Check, MapPin, Search, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
+import { useLocation } from "../../context/LocationContext";
 
 const DashboardLayout = ({
   children,
@@ -12,17 +13,26 @@ const DashboardLayout = ({
   userDoc,
   roleTitle,
   roleColor = "emerald",
-  welcomeName,
-  selectedCity = "Patna",
-  setSelectedCity,
-  cities = ["Patna", "Delhi", "Lucknow", "Mumbai", "Bangalore"]
+  welcomeName
 }) => {
+  const { 
+    selectedCity, 
+    setSelectedCity, 
+    predictions, 
+    handleDetectLocation, 
+    searchCities,
+    isLocating
+  } = useLocation();
+
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [isLocOpen, setIsLocOpen] = useState(false);
   const { i18n } = useTranslation();
   const dropdownRef = useRef(null);
   const locRef = useRef(null);
+  const [locSearch, setLocSearch] = useState("");
+  const [isLocOpen, setIsLocOpen] = useState(false);
+
+
 
   const languages = [
     { code: "en", label: "English", flag: "EN" },
@@ -91,33 +101,82 @@ const DashboardLayout = ({
             <div className="relative" ref={locRef}>
               <button 
                 onClick={() => setIsLocOpen(!isLocOpen)}
-                className={`flex items-center gap-2 p-2.5 bg-white border ${isLocOpen ? `border-blue-200 ring-4 ring-blue-50` : 'border-gray-100'} rounded-2xl text-gray-600 transition-all shadow-sm group active:scale-95`}
+                className={`flex items-center gap-2 p-2.5 bg-white border ${isLocOpen ? `border-blue-200 ring-4 ring-blue-50` : 'border-gray-100'} rounded-2xl text-gray-600 transition-all shadow-sm group active:scale-95 ${!selectedCity ? 'ring-2 ring-red-100 border-red-200 animate-pulse' : ''}`}
               >
-                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                  <MapPin size={18} />
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${!selectedCity ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                  <MapPin size={18} className={!selectedCity ? 'animate-bounce' : ''} />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-widest px-1">
-                  {selectedCity}
+                <span className={`text-[10px] font-black uppercase tracking-widest px-1 ${!selectedCity ? 'text-red-600' : ''}`}>
+                  {selectedCity || "Set Location"}
                 </span>
                 <ChevronDown size={14} className={`text-gray-400 transition-transform duration-300 ${isLocOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isLocOpen && (
-                <div className="absolute top-full right-0 mt-3 w-48 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-200/50 p-2 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                  {cities.map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => { setSelectedCity(city); setIsLocOpen(false); }}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all ${
-                        selectedCity === city 
-                          ? `bg-blue-50 text-blue-600` 
-                          : 'text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span>{city}</span>
-                      {selectedCity === city && <Check size={14} strokeWidth={3} />}
-                    </button>
-                  ))}
+                <div className="absolute top-full right-0 mt-3 w-64 bg-white border border-gray-100 rounded-3xl shadow-2xl shadow-gray-200/50 p-3 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  
+                  {/* 🔍 SEARCH INPUT */}
+                  <div className="relative mb-3">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input 
+                      type="text"
+                      placeholder="Search city..."
+                      value={locSearch}
+                      onChange={(e) => {
+                        setLocSearch(e.target.value);
+                        searchCities(e.target.value);
+                      }}
+                      className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="max-h-[250px] overflow-y-auto custom-scrollbar space-y-1">
+                    {locSearch.trim() === "" ? (
+                      <div className="p-2 space-y-2">
+                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest px-2">Current Selection</p>
+                        <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${!selectedCity ? 'bg-red-50 text-red-600 border-red-100 italic' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                          <MapPin size={14} />
+                          <span>{selectedCity || "No location selected"}</span>
+                          {selectedCity && <div className="ml-auto bg-blue-600 w-1.5 h-1.5 rounded-full animate-pulse"></div>}
+                        </div>
+                        
+                        {/* 📍 Quick Action: Detect Location */}
+                        <button 
+                          disabled={isLocating}
+                          onClick={() => { 
+                            handleDetectLocation();
+                            setIsLocOpen(false); 
+                          }}
+                          className={`w-full flex items-center gap-2 px-4 py-3 ${isLocating ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:bg-gray-50'} rounded-xl text-xs font-bold transition-all group`}
+                        >
+                          <RefreshCw size={14} className={`${isLocating ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`} />
+                          <span>{isLocating ? 'Locating...' : 'Detect My Location'}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      predictions.length > 0 ? (
+                        predictions.map((p) => (
+                          <button
+                            key={p.place_id}
+                            onClick={() => { 
+                              const cityName = p.structured_formatting.main_text;
+                              setSelectedCity(cityName); 
+                              setLocSearch("");
+                              setIsLocOpen(false); 
+                            }}
+                            className="w-full flex flex-col items-start px-4 py-3 rounded-xl text-xs font-bold hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-all border-b border-gray-50 last:border-none"
+                          >
+                            <span>{p.structured_formatting.main_text}</span>
+                            <span className="text-[9px] font-medium text-gray-400">{p.structured_formatting.secondary_text}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="py-8 text-center">
+                          <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">No cities found</p>
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
               )}
             </div>

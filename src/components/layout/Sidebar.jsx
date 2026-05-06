@@ -86,11 +86,6 @@ const Sidebar = ({
           ))}
         </nav>
 
-        {/* FOOTER / ROLE INFO */}
-        {/* <div className="mt-auto pt-8 border-t border-gray-50 px-2">
-          <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-1">Authenticated as</p>
-          <p className={`text-sm font-black text-${roleColor}-600 uppercase tracking-widest`}>{roleTitle}</p>
-        </div> */}
       </aside>
     </>
   );

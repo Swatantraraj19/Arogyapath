@@ -18,6 +18,7 @@ import { logOut } from "../../firebase/services/auth";
 import PatientOverview from "./components/PatientOverview";
 import SymptomChecker from "./components/SymptomChecker";
 import AppointmentList from "./components/AppointmentList";
+import SymptomHistory from "./components/SymptomHistory";
 import ProfileUpdate from "./components/ProfileUpdate";
 import { useAuth } from "../../context/AuthContext";
 import { db } from "../../firebase/config";
@@ -31,7 +32,6 @@ const PatientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [suggestedSpecialty, setSuggestedSpecialty] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedCity, setSelectedCity] = useState("Patna");
   const [profileData, setProfileData] = useState(null);
 
   // 🔄 REAL-TIME PATIENT PROFILE LISTENER
@@ -119,8 +119,6 @@ const PatientDashboard = () => {
       roleTitle="PATIENT ACCOUNT"
       roleColor="emerald"
       welcomeName={(displayData?.fullName || "there").split(" ")[0]}
-      selectedCity={selectedCity}
-      setSelectedCity={setSelectedCity}
     >
       {/* 🧩 TAB CONTENT */}
       {activeTab === "overview" && (
@@ -135,7 +133,6 @@ const PatientDashboard = () => {
         <SymptomChecker 
           t={t} 
           setActiveTab={handleTabChange} 
-          externalCity={selectedCity}
         />
       )}
       
@@ -145,7 +142,6 @@ const PatientDashboard = () => {
           appointments={[]} 
           t={t} 
           initialSearch={suggestedSpecialty}
-          externalCity={selectedCity}
         />
       )}
       
@@ -157,13 +153,8 @@ const PatientDashboard = () => {
       )}
 
       {/* 🚧 COMING SOON SECTIONS */}
-      {(activeTab === "history") && (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white rounded-[3rem] p-12 border border-dashed border-gray-200 text-center space-y-4">
-          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-300">
-            <History size={40} className="animate-pulse" />
-          </div>
-          <p className="text-gray-400 font-bold">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} module coming soon.</p>
-        </div>
+      {activeTab === "history" && (
+        <SymptomHistory />
       )}
     </DashboardLayout>
   );

@@ -1,12 +1,13 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { BrainCircuit, MessageSquare, Sparkles, ChevronRight, Mic, MicOff, Stethoscope, ShieldAlert, Info, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { analyzeSymptoms } from "../../../services/aiService";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../context/AuthContext";
+import { useLocation } from "../../../context/LocationContext";
 
 const SymptomChecker = ({ t: propT, setActiveTab }) => {
+  const { selectedCity: externalCity } = useLocation();
   const { t: localT, i18n } = useTranslation();
   const { currentUser } = useAuth();
   const t = propT || localT;
@@ -55,7 +56,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
     <div className="space-y-4 animate-in fade-in duration-500 pb-10 max-w-4xl mx-auto px-4 md:px-0">
 
       {/* 🌿 PREMIUM GREEN HERO */}
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 text-white relative overflow-hidden shadow-lg border border-emerald-500/20">
+      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-9 text-white relative overflow-hidden shadow-lg border border-emerald-500/20">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
 
         <div className="relative z-10 space-y-4">
@@ -66,7 +67,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
           </div>
 
           <div className="space-y-1 text-left">
-            <h3 className="text-2xl font-bold tracking-tight">How are you feeling today?</h3>
+            <h3 className="text-3xl font-bold tracking-tight">How are you feeling today?</h3>
             <p className="text-emerald-50/70 text-xs italic">Describe symptoms for guidance</p>
           </div>
 
@@ -188,7 +189,13 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
               {/* ACTION BUTTONS */}
               <div className="pt-6 border-t border-gray-50 grid grid-cols-2 gap-6 items-stretch max-w-xl mx-auto">
                 <button
-                  onClick={() => setActiveTab("appointments", assessment.primarySpecialist)}
+                  onClick={() => {
+                    if (!externalCity) {
+                      toast.error("Select your location first!", { icon: "📍" });
+                      return;
+                    }
+                    setActiveTab("appointments", assessment.primarySpecialist);
+                  }}
                   className={`flex flex-col items-center p-4 text-white rounded-3xl transition-all shadow-lg active:scale-[0.98] text-center h-full group ${assessment.emergency ? 'bg-red-600 hover:bg-red-700 shadow-red-900/10' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/10'}`}
                 >
                   <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80 mb-1.5">Recommended Path</span>
@@ -199,7 +206,13 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                 </button>
 
                 <button
-                  onClick={() => setActiveTab("appointments", "")}
+                  onClick={() => {
+                    if (!externalCity) {
+                      toast.error("Select your location first!", { icon: "📍" });
+                      return;
+                    }
+                    setActiveTab("appointments", "");
+                  }}
                   className="flex flex-col items-center p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-3xl hover:bg-gray-100 transition-all active:scale-[0.98] text-center h-full group"
                 >
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1.5">Manual Path</span>

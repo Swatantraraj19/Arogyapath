@@ -11,6 +11,7 @@ import PatientDashboard from "./features/dashboard/PatientDashboard";
 import DoctorDashboard from "./features/dashboard/DoctorDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import { LocationProvider } from "./context/LocationContext";
 import "./index.css"; // Ensure index.css is imported for variables
 
 const App = () => {
@@ -20,8 +21,9 @@ const App = () => {
       style={{ background: "var(--bg-gradient)" }} 
       className="min-h-screen selection:bg-emerald-100 selection:text-emerald-900"
     >
-      <Router>
-        <Toaster position="top-center" reverseOrder={false} />
+      <LocationProvider>
+        <Router>
+          <Toaster position="top-center" reverseOrder={false} />
         <Routes>
           {/* STEP 1: App Opens (Language Page) */}
           <Route path="/" element={<PublicRoute><LanguageSelection /></PublicRoute>} />
@@ -44,8 +46,9 @@ const App = () => {
           <Route path="/dashboard/doctor" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
         </Routes>
       </Router>
-    </div>
-  );
+    </LocationProvider>
+  </div>
+);
 };
 
 export default App;
