@@ -5,9 +5,21 @@ import { toast } from "react-hot-toast";
 const LocationContext = createContext();
 
 export const LocationProvider = ({ children }) => {
-  const [selectedCity, setSelectedCity] = useState(null);
+  // 💾 PERSISTENCE: Initialize from localStorage to prevent reset on refresh
+  const [selectedCity, setSelectedCity] = useState(() => {
+    return localStorage.getItem("arogyapath_city") || null;
+  });
+  
   const [predictions, setPredictions] = useState([]);
   const [isLocating, setIsLocating] = useState(false);
+  const isLocatingRef = useRef(false);
+
+  // 💾 SYNC: Save to localStorage whenever city changes
+  useEffect(() => {
+    if (selectedCity) {
+      localStorage.setItem("arogyapath_city", selectedCity);
+    }
+  }, [selectedCity]);
   const [autocompleteService, setAutocompleteService] = useState(null);
   const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -40,8 +52,21 @@ export const LocationProvider = ({ children }) => {
     }
     
     setIsLocating(true);
+    isLocatingRef.current = true;
+    
+    // ⏱️ Add a timeout of 10 seconds to prevent hanging
+    const timeoutId = setTimeout(() => {
+      if (isLocatingRef.current) {
+        setIsLocating(false);
+        isLocatingRef.current = false;
+        toast.error("Location request timed out. Please select manually.");
+      }
+    }, 10000);
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        clearTimeout(timeoutId);
+        isLocatingRef.current = false;
         try {
           const { latitude, longitude } = position.coords;
           const response = await fetch(
@@ -51,9 +76,12 @@ export const LocationProvider = ({ children }) => {
           
           let detectedCity = null;
           if (data.results && data.results.length > 0) {
+            // Priority: Locality -> Administrative Area Level 2
             const addressComponents = data.results[0].address_components;
             const cityObj = addressComponents.find(c => 
-              c.types.includes("locality") || c.types.includes("administrative_area_level_2")
+              c.types.includes("locality")
+            ) || addressComponents.find(c => 
+              c.types.includes("administrative_area_level_2")
             );
             detectedCity = cityObj?.long_name;
           }
@@ -61,17 +89,27 @@ export const LocationProvider = ({ children }) => {
           if (detectedCity) {
             setSelectedCity(detectedCity);
             toast.success(`Location: ${detectedCity}`, { icon: "📍" });
+          } else {
+            toast.error("Could not determine city name. Please select manually.");
           }
         } catch (error) {
-          toast.error("Could not detect city");
+          console.error("Geocoding Error:", error);
+          toast.error("Network error while fetching city name.");
         } finally {
           setIsLocating(false);
         }
       },
-      () => {
-        toast.error("Location access denied");
+      (error) => {
+        clearTimeout(timeoutId);
         setIsLocating(false);
-      }
+        isLocatingRef.current = false;
+        if (error.code === 1) {
+          toast.error("Please allow location access in your browser settings.");
+        } else {
+          toast.error("Location detection failed.");
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 

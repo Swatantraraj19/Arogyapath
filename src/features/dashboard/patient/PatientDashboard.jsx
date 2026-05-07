@@ -89,11 +89,11 @@ const PatientDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
-          <p className="text-emerald-900 font-black tracking-widest text-xs uppercase animate-pulse">{t("dashboard.loading")}</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mb-4 shadow-sm"></div>
+        <p className="text-emerald-900/40 font-black text-xs uppercase tracking-widest animate-pulse">
+          {t("dashboard.loading")}
+        </p>
       </div>
     );
   }
@@ -112,30 +112,30 @@ const PatientDashboard = () => {
     >
       {/* 🧩 TAB CONTENT */}
       {activeTab === "overview" && (
-        <PatientOverview 
-          t={t} 
-          userDoc={displayData} 
-          setActiveTab={handleTabChange} 
+        <PatientOverview
+          t={t}
+          userDoc={displayData}
+          setActiveTab={handleTabChange}
         />
       )}
-      
+
       {activeTab === "symptom" && (
-        <SymptomChecker 
-          t={t} 
-          setActiveTab={handleTabChange} 
+        <SymptomChecker
+          t={t}
+          setActiveTab={handleTabChange}
         />
       )}
-      
+
       {activeTab === "appointments" && (
-        <PatientAppointmentList 
-          t={t} 
+        <PatientAppointmentList
+          t={t}
           initialSearch={suggestedSpecialty}
         />
       )}
-      
+
       {activeTab === "profile" && (
-        <PatientProfileUpdate 
-          existingData={displayData} 
+        <PatientProfileUpdate
+          existingData={displayData}
         />
       )}
 

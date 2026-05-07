@@ -23,15 +23,65 @@ const PatientProfileUpdate = ({ existingData }) => {
     location: existingData?.location || "",
   });
 
-  const handleFileChange = (e) => {
+  // 🛠️ IMAGE COMPRESSION LOGIC
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Max dimensions for profile pic
+          const MAX_SIZE = 800;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Quality 0.7 is perfect balance
+          canvas.toBlob((blob) => {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          }, 'image/jpeg', 0.7);
+        };
+      };
+    });
+  };
+
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        return toast.error(t("profile_setup.error_image_size"));
+      setLoading(true);
+      try {
+        const compressed = await compressImage(file);
+        setImage(compressed);
+        setPreview(URL.createObjectURL(compressed));
+        if (errors.photo) setErrors({ ...errors, photo: null });
+      } catch (err) {
+        toast.error("Failed to process image");
+      } finally {
+        setLoading(false);
       }
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
-      if (errors.photo) setErrors({ ...errors, photo: null });
     }
   };
 

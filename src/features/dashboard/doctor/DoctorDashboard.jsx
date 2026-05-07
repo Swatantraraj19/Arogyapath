@@ -18,7 +18,8 @@ const DoctorDashboard = () => {
   const { currentUser, userDoc } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [profileData, setProfileData] = useState(null);
-  
+  const [loading, setLoading] = useState(true);
+
   // 🚀 SCROLL TO TOP ON MOUNT
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -37,6 +38,10 @@ const DoctorDashboard = () => {
       } else {
         setProfileData(userDoc);
       }
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching doctor profile:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, [currentUser, userDoc]);
@@ -96,6 +101,17 @@ const DoctorDashboard = () => {
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4 shadow-sm"></div>
+        <p className="text-blue-900/40 font-black text-xs uppercase tracking-widest animate-pulse">
+          {t("dashboard.loading")}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <DashboardLayout
       navItems={navItems}
@@ -111,8 +127,8 @@ const DoctorDashboard = () => {
       {activeTab === "profile" && <DoctorProfileUpdate existingData={profileData || userDoc} />}
 
       {(activeTab === "requests" || activeTab === "appointments" || activeTab === "history") && (
-        <DoctorAppointmentList 
-          t={t} 
+        <DoctorAppointmentList
+          t={t}
         />
       )}
 

@@ -56,10 +56,10 @@ const SymptomHistory = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
-  const filteredHistory = history.filter(item =>
+  const filteredHistory = React.useMemo(() => history.filter(item =>
     item.symptoms.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.result.primarySpecialist.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ), [history, searchQuery]);
 
   if (loading) {
     return (

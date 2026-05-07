@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { User, Search, Star, MapPin, Mic, MicOff, X, CheckCircle2, Video, Building2, Hash } from "lucide-react";
+import { User, Search, Star, MapPin, Mic, MicOff, X, CheckCircle2, Video, Building2, Hash, RefreshCw } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useLocation } from "../../../../context/LocationContext";
 
 const PatientAppointmentList = ({ t, initialSearch = "" }) => {
-  const { selectedCity: externalCity, handleDetectLocation: onDetectLocation } = useLocation();
+  const { 
+    selectedCity: externalCity, 
+    handleDetectLocation: onDetectLocation,
+    isLocating 
+  } = useLocation();
   const [activeSubTab, setActiveSubTab] = useState("find");
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [isListening, setIsListening] = useState(false);
@@ -120,6 +124,15 @@ const PatientAppointmentList = ({ t, initialSearch = "" }) => {
     toast.success("Thank you for your feedback!");
   };
 
+  const filteredDoctors = React.useMemo(() => {
+    return doctors
+      .filter(d => (externalCity === "All" || d.city === externalCity))
+      .filter(d =>
+        d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+  }, [searchQuery, externalCity]);
+
   return (
     <div className="space-y-8 animate-in slide-in-from-right-8 duration-700 pb-20">
       
@@ -167,17 +180,28 @@ const PatientAppointmentList = ({ t, initialSearch = "" }) => {
               Please select your city to discover the best doctors and specialists near you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={onDetectLocation} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-red-900/10">Detect Location</button>
+              <button 
+                onClick={onDetectLocation} 
+                disabled={isLocating}
+                className={`flex items-center gap-2 px-6 py-3 ${isLocating ? 'bg-gray-100 text-gray-400' : 'bg-red-600 text-white shadow-xl shadow-red-900/10'} rounded-2xl font-black text-sm transition-all`}
+              >
+                {isLocating ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Locating...
+                  </>
+                ) : (
+                  <>
+                    <MapPin size={16} />
+                    Detect Location
+                  </>
+                )}
+              </button>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {doctors
-              .filter(d => (externalCity === "All" || d.city === externalCity))
-              .filter(d =>
-                d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
-              ).map((doc) => (
+            {filteredDoctors.map((doc) => (
                 <div key={doc.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative flex flex-col justify-between h-full">
                   <div>
                     <div className="flex items-center gap-4 mb-4">
