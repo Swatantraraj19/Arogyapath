@@ -2,7 +2,7 @@
 import React from "react";
 import { Users, Clock, MessageCircle, Check, ClipboardList } from "lucide-react";
 
-const DoctorOverview = ({ t, userDoc }) => {
+const DoctorOverview = ({ t }) => {
   const stats = [
     { icon: <Users size={24} />, label: t('doctor_dashboard.patients'), value: "0", color: "text-blue-600", bg: "bg-blue-50" },
     { icon: <Clock size={24} />, label: t('doctor_dashboard.consults'), value: "0", color: "text-indigo-600", bg: "bg-indigo-50" },

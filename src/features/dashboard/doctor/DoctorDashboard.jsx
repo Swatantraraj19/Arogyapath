@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { logOut } from "../../firebase/services/auth";
-import {
-  LogOut, LayoutDashboard, Users, Clock,
-  FileText, RefreshCw, Settings, UserCircle
-} from "lucide-react";
+import { logOut } from "../../../firebase/services/auth";
+import { LogOut, LayoutDashboard, Users, Clock, FileText, RefreshCw, Settings, UserCircle } from "lucide-react";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase/config";
+import { db } from "../../../firebase/config";
 import { toast } from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
-
-// 🧩 COMPONENTS
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import { useAuth } from "../../../context/AuthContext";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 import DoctorOverview from "./components/DoctorOverview";
-import AppointmentList from "./components/AppointmentList";
-import ProfileUpdate from "./components/ProfileUpdate";
+import DoctorAppointmentList from "./components/DoctorAppointmentList";
+import DoctorProfileUpdate from "./components/DoctorProfileUpdate";
 
 const DoctorDashboard = () => {
   const { t } = useTranslation();
@@ -113,12 +108,10 @@ const DoctorDashboard = () => {
     >
       {/* 🧩 TAB CONTENT */}
       {activeTab === "overview" && <DoctorOverview t={t} userDoc={profileData || userDoc} />}
-      {activeTab === "profile" && <ProfileUpdate role="doctor" existingData={profileData || userDoc} />}
+      {activeTab === "profile" && <DoctorProfileUpdate existingData={profileData || userDoc} />}
 
       {(activeTab === "requests" || activeTab === "appointments" || activeTab === "history") && (
-        <AppointmentList 
-          role="doctor" 
-          appointments={[]} 
+        <DoctorAppointmentList 
           t={t} 
         />
       )}

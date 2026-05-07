@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { BrainCircuit, MessageSquare, Sparkles, ChevronRight, Mic, MicOff, Stethoscope, ShieldAlert, Info, X } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { analyzeSymptoms } from "../../../services/aiService";
+import { analyzeSymptoms } from "../../../../services/aiService";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../../context/AuthContext";
-import { useLocation } from "../../../context/LocationContext";
+import { useAuth } from "../../../../context/AuthContext";
+import { useLocation } from "../../../../context/LocationContext";
 
 const SymptomChecker = ({ t: propT, setActiveTab }) => {
   const { selectedCity: externalCity } = useLocation();

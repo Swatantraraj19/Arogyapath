@@ -1,13 +1,12 @@
 
 import React, { useState, useEffect } from "react";
-import { db } from "../../../firebase/config";
+import { db } from "../../../../firebase/config";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../../context/AuthContext";
 import {
   History,
   Search,
   Calendar,
-  ChevronRight,
   Activity,
   BrainCircuit,
   AlertTriangle,

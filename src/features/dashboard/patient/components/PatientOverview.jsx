@@ -1,5 +1,5 @@
 import React from "react";
-import { BrainCircuit, FolderHeart, Sparkles, Activity, ArrowRight, Lightbulb, ClipboardCheck, PlusCircle } from "lucide-react";
+import { BrainCircuit, Sparkles, Activity, Lightbulb, ClipboardCheck, PlusCircle } from "lucide-react";
 
 const PatientOverview = ({ t, userDoc, setActiveTab }) => {
   const healthTips = [

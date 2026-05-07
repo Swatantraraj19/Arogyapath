@@ -8,7 +8,6 @@ const Sidebar = ({
   setActiveTab, 
   isMobileOpen, 
   setIsMobileOpen,
-  roleTitle,
   roleColor = "emerald"
 }) => {
   // 🎨 COLOR MAP FOR DYNAMIC TAILWIND CLASSES

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Calendar, Calendar as CalendarIcon, Clock, User, ChevronRight, Search, Star, MapPin, Filter, Stethoscope, Mic, MicOff, X, AlertCircle, CheckCircle2, Video, Building2, Phone, Hash, Navigation } from "lucide-react";
+import { User, Search, Star, MapPin, Mic, MicOff, X, CheckCircle2, Video, Building2, Hash } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useLocation } from "../../../context/LocationContext";
+import { useLocation } from "../../../../context/LocationContext";
 
-const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
+const PatientAppointmentList = ({ t, initialSearch = "" }) => {
   const { selectedCity: externalCity, handleDetectLocation: onDetectLocation } = useLocation();
   const [activeSubTab, setActiveSubTab] = useState("find");
   const [searchQuery, setSearchQuery] = useState(initialSearch);
@@ -52,8 +52,31 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
     };
   });
 
-  const morningSlots = ["09:00 AM", "10:00 AM", "11:00 AM", "11:30 AM"];
-  const eveningSlots = ["05:00 PM", "06:00 PM", "07:00 PM", "08:00 PM"];
+  const slots = ["09:00 AM", "10:00 AM", "11:30 AM", "02:00 PM", "04:30 PM", "06:00 PM"];
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        setIsListening(false);
+      };
+      recognitionRef.current.onend = () => setIsListening(false);
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) return toast.error("Not supported");
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   const handleBookClick = (doctor) => {
     setSelectedDoctor(doctor);
@@ -73,7 +96,6 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
   };
 
   const handleViewBooking = (app) => {
-    // Find the doctor object to get clinic details
     const doctor = doctors.find(d => d.name === app.doctorName);
     setSelectedDoctor(doctor || { name: app.doctorName });
     setSelectedDate(app.date);
@@ -91,38 +113,32 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
     }
   };
 
-  const openRatingModal = (appId) => {
-    setRatingAppointmentId(appId);
-    setRatingValue(0);
-    setIsRatingModalOpen(true);
-  };
-
   const submitRating = () => {
+    if (ratingValue === 0) return toast.error("Please select stars");
     setMyBookings(prev => prev.map(app => app.id === ratingAppointmentId ? { ...app, hasRated: true } : app));
     setIsRatingModalOpen(false);
-    toast.success("Rated!");
+    toast.success("Thank you for your feedback!");
   };
 
   return (
     <div className="space-y-8 animate-in slide-in-from-right-8 duration-700 pb-20">
-
+      
       {/* HEADER SECTION */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight">{t('appointments.title')}</h2>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Appointments</h2>
           <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl w-fit">
             <button onClick={() => setActiveSubTab("find")} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeSubTab === 'find' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-              {t('appointments.find_doctors')}
+              Find Doctors
             </button>
             <button onClick={() => setActiveSubTab("my")} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeSubTab === 'my' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-              {t('appointments.my_bookings')}
+              My Bookings
             </button>
           </div>
         </div>
 
         {activeSubTab === "find" && (
           <div className="flex items-center gap-3 flex-1 max-w-md">
-            {/* Search Input */}
             <div className="relative group flex-1 w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
               <input
@@ -132,6 +148,9 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-12 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 outline-none transition-all font-bold text-sm"
               />
+              <button onClick={toggleListening} className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-gray-400 hover:bg-gray-100'}`}>
+                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+              </button>
             </div>
           </div>
         )}
@@ -148,16 +167,7 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
               Please select your city to discover the best doctors and specialists near you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-red-900/10 animate-bounce">
-                Click "Set Location" Above 👆
-              </div>
-              <button
-                onClick={onDetectLocation}
-                className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl font-black text-sm hover:border-emerald-200 hover:text-emerald-600 transition-all shadow-lg shadow-gray-200/50 group"
-              >
-                <Navigation size={16} className="group-hover:rotate-45 transition-transform" />
-                Detect Automatically
-              </button>
+              <button onClick={onDetectLocation} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-red-900/10">Detect Location</button>
             </div>
           </div>
         ) : (
@@ -232,7 +242,7 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${app.status === 'completed' ? 'bg-gray-50 border-gray-100 text-gray-400' : app.status === 'cancelled' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
                   {app.mode === 'video' ? <Video size={24} /> : <Building2 size={24} />}
                 </div>
-                <div>
+                <div className="text-left">
                   <h5 className={`font-black text-gray-900 leading-tight ${app.status === 'cancelled' ? 'line-through opacity-50' : ''}`}>{app.doctorName}</h5>
                   <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{app.date} • {app.time}</p>
                 </div>
@@ -244,7 +254,7 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
                     <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">Completed</span>
                     {!app.hasRated ? (
                       <button
-                        onClick={(e) => { e.stopPropagation(); openRatingModal(app.id); }}
+                        onClick={(e) => { e.stopPropagation(); setRatingAppointmentId(app.id); setIsRatingModalOpen(true); }}
                         className="text-[10px] font-black text-white bg-amber-500 px-4 py-1.5 rounded-xl uppercase tracking-widest hover:bg-amber-600 transition-all shadow-md shadow-amber-900/10 active:scale-95"
                       >
                         Rate Now
@@ -290,21 +300,21 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
         </div>
       )}
 
-      {/* 🗓️ UPDATED BOOKING MODAL WITH RECEIPT DETAILS */}
+      {/* 🗓️ BOOKING MODAL */}
       {isBookingModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden animate-in zoom-in-95 max-h-[90vh] overflow-y-auto scrollbar-hide">
             {bookingStep === 1 ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between"><h3 className="text-2xl font-black text-gray-900">Confirm Appointment</h3><button onClick={() => setIsBookingModalOpen(false)} className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500"><X size={20} /></button></div>
-                <div className="space-y-3">
+                <div className="flex items-center justify-between"><h3 className="text-2xl font-black text-gray-900 text-left">Confirm Appointment</h3><button onClick={() => setIsBookingModalOpen(false)} className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500"><X size={20} /></button></div>
+                <div className="space-y-3 text-left">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Consultation Mode</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button onClick={() => setConsultationMode("clinic")} className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-black text-xs ${consultationMode === "clinic" ? 'bg-emerald-50 border-emerald-600 text-emerald-700' : 'bg-white border-gray-100 text-gray-500'}`}><Building2 size={18} /> Clinic Visit</button>
                     <button onClick={() => setConsultationMode("video")} className={`flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-black text-xs ${consultationMode === "video" ? 'bg-blue-50 border-blue-600 text-blue-700' : 'bg-white border-gray-100 text-gray-500'}`}><Video size={18} /> Online Video</button>
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 text-left">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Date</p>
                   <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {availableDates.map((d, idx) => (
@@ -314,10 +324,10 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
                     ))}
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 text-left">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Time</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {[...morningSlots, ...eveningSlots].map(slot => (
+                    {slots.map(slot => (
                       <button key={slot} onClick={() => setSelectedSlot(slot)} className={`py-3 px-4 rounded-xl text-xs font-bold border-2 transition-all ${selectedSlot === slot ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-gray-100'}`}>{slot}</button>
                     ))}
                   </div>
@@ -356,14 +366,6 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
                       <span className="text-gray-400 flex items-center gap-2 shrink-0"><MapPin size={14} className="text-emerald-500" /> Clinic Address</span>
                       <span className="text-gray-900 text-right leading-relaxed max-w-[60%]">{selectedDoctor?.address}</span>
                     </div>
-                    <div className="flex items-center justify-between text-xs font-bold pt-1">
-                      <span className="text-gray-400 flex items-center gap-2"><Phone size={14} className="text-emerald-500" /> Contact Number</span>
-                      <span className="text-gray-900 font-black">{selectedDoctor?.phone}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs font-bold pt-4 border-t border-gray-200">
-                    <span className="text-gray-400">Consultation Fee</span>
-                    <span className="text-emerald-600 font-black">{consultationMode === "clinic" ? selectedDoctor?.clinicFee : selectedDoctor?.onlineFee} Paid</span>
                   </div>
                 </div>
 
@@ -377,4 +379,4 @@ const AppointmentList = ({ role = "patient", t, initialSearch = "" }) => {
   );
 };
 
-export default AppointmentList;
+export default PatientAppointmentList;

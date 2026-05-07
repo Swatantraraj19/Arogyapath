@@ -80,7 +80,6 @@ const DashboardLayout = ({
         setActiveTab={setActiveTab}
         isMobileOpen={isSidebarOpen}
         setIsMobileOpen={setSidebarOpen}
-        roleTitle={roleTitle}
         roleColor={roleColor}
       />
 

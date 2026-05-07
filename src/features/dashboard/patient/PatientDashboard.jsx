@@ -1,27 +1,17 @@
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  LayoutDashboard, 
-  Stethoscope, 
-  Calendar, 
-  History, 
-  UserCircle, 
-  Settings, 
-  LogOut,
-  RefreshCw,
-  Bell
-} from "lucide-react";
+import { LayoutDashboard, Stethoscope, Calendar, History, UserCircle, LogOut, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../components/layout/DashboardLayout";
-import { logOut } from "../../firebase/services/auth";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
+import { logOut } from "../../../firebase/services/auth";
 import PatientOverview from "./components/PatientOverview";
 import SymptomChecker from "./components/SymptomChecker";
-import AppointmentList from "./components/AppointmentList";
+import PatientAppointmentList from "./components/PatientAppointmentList";
 import SymptomHistory from "./components/SymptomHistory";
-import ProfileUpdate from "./components/ProfileUpdate";
-import { useAuth } from "../../context/AuthContext";
-import { db } from "../../firebase/config";
+import PatientProfileUpdate from "./components/PatientProfileUpdate";
+import { useAuth } from "../../../context/AuthContext";
+import { db } from "../../../firebase/config";
 import { updateDoc, doc, onSnapshot } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 
@@ -137,17 +127,14 @@ const PatientDashboard = () => {
       )}
       
       {activeTab === "appointments" && (
-        <AppointmentList 
-          role="patient" 
-          appointments={[]} 
+        <PatientAppointmentList 
           t={t} 
           initialSearch={suggestedSpecialty}
         />
       )}
       
       {activeTab === "profile" && (
-        <ProfileUpdate 
-          role="patient" 
+        <PatientProfileUpdate 
           existingData={displayData} 
         />
       )}
