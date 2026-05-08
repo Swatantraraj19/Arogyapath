@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { logOut } from "../../../firebase/services/auth";
-import { LogOut, LayoutDashboard, Users, Clock, FileText, RefreshCw, Settings, UserCircle } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, Clock, FileText, RefreshCw, Settings, UserCircle, Calendar } from "lucide-react";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../firebase/config";
 import { toast } from "react-hot-toast";
@@ -11,6 +11,7 @@ import DashboardLayout from "../../../components/layout/DashboardLayout";
 import DoctorOverview from "./components/DoctorOverview";
 import DoctorAppointmentList from "./components/DoctorAppointmentList";
 import DoctorProfileUpdate from "./components/DoctorProfileUpdate";
+import DoctorAvailability from "./components/DoctorAvailability";
 
 const DoctorDashboard = () => {
   const { t } = useTranslation();
@@ -93,9 +94,8 @@ const DoctorDashboard = () => {
 
   const navItems = [
     { id: "overview", icon: <LayoutDashboard size={20} />, label: t("dashboard.overview") },
-    { id: "requests", icon: <Users size={20} />, label: "New Requests" },
-    { id: "appointments", icon: <Clock size={20} />, label: "Active Consults" },
-    { id: "history", icon: <FileText size={20} />, label: "Patient History" },
+    { id: "appointments", icon: <Clock size={20} />, label: "Appointments" },
+    { id: "availability", icon: <Calendar size={20} />, label: "Availability Manager" },
     { id: "profile", icon: <UserCircle size={20} />, label: t("dashboard.profile") },
     { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_patient"), action: handleRoleSwitch, special: true, hoverColor: "emerald" },
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
@@ -123,23 +123,25 @@ const DoctorDashboard = () => {
       welcomeName={`Dr. ${(profileData?.fullName || userDoc?.fullName || "Consultant").split(" ")[0]}`}
     >
       {/* 🧩 TAB CONTENT */}
-      {activeTab === "overview" && <DoctorOverview t={t} userDoc={profileData || userDoc} />}
-      {activeTab === "profile" && <DoctorProfileUpdate existingData={profileData || userDoc} />}
+      {activeTab === "overview" && (
+        <DoctorOverview 
+          t={t} 
+          userDoc={profileData || userDoc} 
+          onViewSchedule={() => setActiveTab("appointments")} 
+        />
+      )}
 
-      {(activeTab === "requests" || activeTab === "appointments" || activeTab === "history") && (
+      {activeTab === "appointments" && (
         <DoctorAppointmentList
           t={t}
         />
       )}
 
-      {activeTab === "settings" && (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white rounded-[3rem] p-12 border border-dashed border-gray-200 text-center space-y-4">
-          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-300">
-            <Settings size={40} className="animate-spin-slow" />
-          </div>
-          <p className="text-gray-400 font-bold">Settings module coming soon.</p>
-        </div>
-      )}
+      {activeTab === "availability" && <DoctorAvailability t={t} />}
+
+      {activeTab === "profile" && 
+      <DoctorProfileUpdate existingData={profileData || userDoc} />}
+      
     </DashboardLayout>
   );
 };

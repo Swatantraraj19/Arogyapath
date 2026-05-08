@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-hot-toast";
-import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../../../firebase/config";
 import { useAuth } from "../../../../context/AuthContext";
 import { User, Phone, MapPin, Award, Activity, Camera, Mail, ClipboardList } from "lucide-react";
