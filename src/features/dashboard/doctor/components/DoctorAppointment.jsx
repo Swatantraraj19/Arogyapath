@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Calendar, Clock, User, ChevronRight, Search, Video, Building2, X, AlertCircle, Phone, MapPin } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const DoctorAppointmentList = ({ t }) => {
+const DoctorAppointment = ({ t }) => {
   const [activeSubTab, setActiveSubTab] = useState("upcoming");
   const [filterType, setFilterType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -253,4 +253,4 @@ const DoctorAppointmentList = ({ t }) => {
   );
 };
 
-export default DoctorAppointmentList;
+export default DoctorAppointment;

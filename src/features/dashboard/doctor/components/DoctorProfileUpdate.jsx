@@ -4,7 +4,10 @@ import { toast } from "react-hot-toast";
 import { doc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../../../firebase/config";
 import { useAuth } from "../../../../context/AuthContext";
-import { User, Phone, MapPin, Award, Activity, Camera, Mail, ClipboardList } from "lucide-react";
+import { 
+  Camera, User, Mail, Phone, MapPin, Award, Activity, Save, 
+  Trash2, X, Check, Building2, ClipboardList, Stethoscope 
+} from "lucide-react";
 
 const DoctorProfileUpdate = ({ existingData }) => {
   const { t } = useTranslation();
@@ -56,7 +59,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-          
+
           // Quality 0.7 is perfect balance
           canvas.toBlob((blob) => {
             const compressedFile = new File([blob], file.name, {
@@ -94,12 +97,14 @@ const DoctorProfileUpdate = ({ existingData }) => {
       newErrors.fullName = t("profile_setup.error_name");
     }
     if (!data.phone.trim() || !/^[6-9]\d{9}$/.test(data.phone)) newErrors.phone = t("profile_setup.error_phone");
-    if (!data.location.trim() || data.location.trim().length < 3 || !/^[a-zA-Z\s,]+$/.test(data.location)) {
+    if (!data.location.trim() || data.location.trim().length < 3) {
       newErrors.location = t("profile_setup.error_location");
+    } else if (!/^[a-zA-Z\s,]+$/.test(data.location)) {
+      newErrors.location = t("profile_setup.error_alphabets");
     }
-
-    if (!String(data.specialization).trim() || data.specialization.trim().length < 5 || !/^[a-zA-Z\s]+$/.test(data.specialization)) {
-      newErrors.specialization = t("profile_setup.error_specialization");
+    
+    if (!data.specialization || data.specialization === "") {
+      newErrors.specialization = t("profile_setup.error_required");
     }
     const expNum = parseInt(data.experience);
     if (isNaN(expNum) || expNum < 0 || expNum > 100) {
@@ -149,7 +154,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
         photoUrl = await uploadImageToCloudinary(image);
         toast.dismiss("uploading");
       }
-      
+
       const profileData = {
         fullName: formData.fullName,
         phone: formData.phone,
@@ -167,14 +172,14 @@ const DoctorProfileUpdate = ({ existingData }) => {
       };
 
       await setDoc(doc(db, "doctors", currentUser.uid), profileData);
-      
+
       await setDoc(doc(db, "users", currentUser.uid), {
         fullName: profileData.fullName,
         photoUrl: photoUrl,
         onboardingComplete: true,
         completedRoles: arrayUnion(role)
       }, { merge: true });
-        
+
       toast.success(t("profile_setup.success"));
     } catch (error) {
       toast.error(t("auth.errorUnexpected"));
@@ -197,7 +202,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-sm border border-gray-100">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row items-center gap-10 mb-12">
           <div className="relative group">
@@ -226,7 +231,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
+
           <div className="md:col-span-2 space-y-1">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <User size={16} className="text-gray-400" /> {t("profile_setup.full_name")}
@@ -279,12 +284,40 @@ const DoctorProfileUpdate = ({ existingData }) => {
 
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <ClipboardList size={16} className="text-gray-400" /> {t("profile_setup.specialization")}
+              <Stethoscope size={16} className="text-gray-400" /> {t("profile_setup.specialization")}
             </label>
-            <input type="text" name="specialization" value={formData.specialization} onChange={handleInputChange} className={`input-standard ${errors.specialization ? 'border-red-500' : ''}`} />
+            <select
+              name="specialization"
+              value={formData.specialization}
+              onChange={handleInputChange}
+              className={`input-standard appearance-none bg-white cursor-pointer ${errors.specialization ? 'border-red-500' : ''}`}
+            >
+              <option value="">{t("profile_setup.select_specialization") || "Select Specialization"}</option>
+              <option value="General Physician">{t("profile_setup.spec_general_physician")}</option>
+              <option value="Cardiologist">{t("profile_setup.spec_cardiologist")}</option>
+              <option value="Dermatologist">{t("profile_setup.spec_dermatologist")}</option>
+              <option value="Pediatrician">{t("profile_setup.spec_pediatrician")}</option>
+              <option value="Orthopedic">{t("profile_setup.spec_orthopedic")}</option>
+              <option value="Gynecologist">{t("profile_setup.spec_gynecologist")}</option>
+              <option value="Ophthalmologist">{t("profile_setup.spec_ophthalmologist")}</option>
+              <option value="Neurologist">{t("profile_setup.spec_neurologist")}</option>
+              <option value="ENT Specialist">{t("profile_setup.spec_ent_specialist")}</option>
+              <option value="Psychiatrist">{t("profile_setup.spec_psychiatrist")}</option>
+              <option value="Dentist">{t("profile_setup.spec_dentist")}</option>
+              <option value="Urologist">{t("profile_setup.spec_urologist")}</option>
+              <option value="Oncologist">{t("profile_setup.spec_oncologist")}</option>
+              <option value="Physiotherapist">{t("profile_setup.spec_physiotherapist")}</option>
+              <option value="Dietitian">{t("profile_setup.spec_dietitian")}</option>
+              <option value="Pulmonologist">{t("profile_setup.spec_pulmonologist")}</option>
+              <option value="Gastroenterologist">{t("profile_setup.spec_gastroenterologist")}</option>
+              <option value="Endocrinologist">{t("profile_setup.spec_endocrinologist")}</option>
+              <option value="Nephrologist">{t("profile_setup.spec_nephrologist")}</option>
+              <option value="Sexologist">{t("profile_setup.spec_sexologist")}</option>
+              <option value="Psychologist">{t("profile_setup.spec_psychologist")}</option>
+            </select>
             {errors.specialization && <p className="text-xs text-red-500 font-medium">{errors.specialization}</p>}
           </div>
-          
+
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Award size={16} className="text-gray-400" /> {t("profile_setup.experience")}
@@ -292,7 +325,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
             <input type="number" name="experience" value={formData.experience} onChange={handleInputChange} className={`input-standard ${errors.experience ? 'border-red-500' : ''}`} />
             {errors.experience && <p className="text-xs text-red-500 font-medium">{errors.experience}</p>}
           </div>
-          
+
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Activity size={16} className="text-gray-400" /> {t("profile_setup.license")}
@@ -300,7 +333,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
             <input type="text" name="license" value={formData.license} onChange={handleInputChange} className={`input-standard ${errors.license ? 'border-red-500' : ''}`} />
             {errors.license && <p className="text-xs text-red-500 font-medium">{errors.license}</p>}
           </div>
-          
+
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">
               {t("profile_setup.clinic_name")}
@@ -308,18 +341,18 @@ const DoctorProfileUpdate = ({ existingData }) => {
             <input type="text" name="clinicName" value={formData.clinicName} onChange={handleInputChange} className={`input-standard ${errors.clinicName ? 'border-red-500' : ''}`} />
             {errors.clinicName && <p className="text-xs text-red-500 font-medium">{errors.clinicName}</p>}
           </div>
-          
+
           <div className="md:col-span-2 space-y-1">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <MapPin size={16} className="text-gray-400" /> {t("profile_setup.clinic_address")}
             </label>
-            <textarea 
-              name="clinicAddress" 
-              rows="3" 
+            <textarea
+              name="clinicAddress"
+              rows="3"
               spellCheck="false"
-              value={formData.clinicAddress} 
-              onChange={handleInputChange} 
-              className={`input-standard resize-none ${errors.clinicAddress ? 'border-red-500' : ''}`} 
+              value={formData.clinicAddress}
+              onChange={handleInputChange}
+              className={`input-standard resize-none ${errors.clinicAddress ? 'border-red-500' : ''}`}
             />
             {errors.clinicAddress && <p className="text-xs text-red-500 font-medium">{errors.clinicAddress}</p>}
           </div>

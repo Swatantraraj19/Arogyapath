@@ -122,13 +122,20 @@ const DoctorAvailability = ({ t }) => {
   const nextDates = React.useMemo(() => {
     const dates = [];
     const today = new Date();
+    const getLocalDateStr = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
     for (let i = 0; i < 7; i++) {
       const nextDate = new Date();
       nextDate.setDate(today.getDate() + i);
       dates.push({
         dayName: nextDate.toLocaleDateString('en-US', { weekday: 'long' }),
         dateStr: nextDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        fullDate: nextDate.toISOString().split('T')[0],
+        fullDate: getLocalDateStr(nextDate),
         isToday: i === 0
       });
     }
@@ -158,7 +165,38 @@ const DoctorAvailability = ({ t }) => {
     }));
   };
 
-  const removeSlot = (dayIndex, slotIndex) => {
+  const removeSlot = async (dayIndex, slotIndex) => {
+    const day = weeklySchedule[dayIndex];
+    const slot = day.slots[slotIndex];
+    
+    // 🛡️ Pre-deletion check for active bookings in this specific slot
+    try {
+      const q = query(
+        collection(db, "appointments"),
+        where("doctorId", "==", currentUser.uid),
+        where("status", "==", "upcoming"),
+        where("time", "==", format12h(slot.start))
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const allUpcomingAtTime = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Filter to find only those on the same day of the week (e.g., all future Mondays)
+      const slotConflicts = allUpcomingAtTime.filter(app => {
+        const appDate = new Date(app.rawDate || app.date);
+        const appDayName = appDate.toLocaleDateString('en-US', { weekday: 'long' });
+        return appDayName === day.day;
+      }).map(app => ({ ...app, reason: "Time slot has active bookings" }));
+
+      if (slotConflicts.length > 0) {
+        setConflicts(slotConflicts);
+        setShowWarning(true);
+        return; // Stop deletion if there's a real conflict on this day
+      }
+    } catch (error) {
+      console.error("Conflict check failed:", error);
+    }
+
     setWeeklySchedule(prev => prev.map((day, dIdx) => {
       if (dIdx !== dayIndex) return day;
       return {
@@ -168,17 +206,53 @@ const DoctorAvailability = ({ t }) => {
     }));
   };
 
-  const addHoliday = () => {
+  const addHoliday = async () => {
     if (!newHoliday) return toast.error("Please select a date");
     if (blockedDates.includes(newHoliday)) return toast.error("Date already blocked");
-    setBlockedDates(prev => [...prev, newHoliday].sort());
-    setNewHoliday("");
-    toast.success("Holiday added to your schedule");
+    
+    const updatedBlocked = [...blockedDates, newHoliday].sort();
+    
+    // 🛡️ Pre-save conflict check
+    const q = query(
+      collection(db, "appointments"),
+      where("doctorId", "==", currentUser.uid),
+      where("status", "==", "upcoming"),
+      where("rawDate", "==", newHoliday)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const foundConflicts = querySnapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(), 
+        reason: "Date is now a Holiday" 
+      }));
+      setConflicts(foundConflicts);
+      setShowWarning(true);
+      return;
+    }
+
+    try {
+      const docRef = doc(db, "availability", currentUser.uid);
+      await setDoc(docRef, { blockedDates: updatedBlocked }, { merge: true });
+      setBlockedDates(updatedBlocked);
+      setNewHoliday("");
+      toast.success("Holiday saved successfully!", { icon: '🏖️' });
+    } catch (error) {
+      toast.error("Failed to save holiday");
+    }
   };
 
-  const removeHoliday = (date) => {
-    setBlockedDates(prev => prev.filter(d => d !== date));
-    toast.success("Date unblocked");
+  const removeHoliday = async (date) => {
+    const updatedBlocked = blockedDates.filter(d => d !== date);
+    try {
+      const docRef = doc(db, "availability", currentUser.uid);
+      await setDoc(docRef, { blockedDates: updatedBlocked }, { merge: true });
+      setBlockedDates(updatedBlocked);
+      toast.success("Date unblocked and saved!");
+    } catch (error) {
+      toast.error("Failed to update schedule");
+    }
   };
 
   const applySmartAll = () => {
@@ -195,6 +269,16 @@ const DoctorAvailability = ({ t }) => {
 
   const [conflicts, setConflicts] = useState([]);
   const [showWarning, setShowWarning] = useState(false);
+
+  // 🕒 Helper: Convert 24h (10:30) to 12h (10:30 AM)
+  const format12h = (time24) => {
+    if (!time24) return "";
+    let [h, m] = time24.split(':');
+    h = parseInt(h, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h.toString().padStart(2, '0')}:${m} ${ampm}`;
+  };
 
   // 🕒 Helper: Convert 12h (10:30 AM) to 24h (10:30)
   const to24h = (time12h) => {
@@ -253,6 +337,24 @@ const DoctorAvailability = ({ t }) => {
   const handleSave = async (force = false) => {
     if (!currentUser) return toast.error("Please login first");
     
+    // 🛡️ Validate NO Overlapping Slots in the schedule itself
+    for (const day of weeklySchedule) {
+      const slots = day.slots;
+      for (let i = 0; i < slots.length; i++) {
+        for (let j = i + 1; j < slots.length; j++) {
+          const s1 = slots[i];
+          const s2 = slots[j];
+          // Overlap condition: (StartA < EndB) AND (EndA > StartB)
+          if (s1.start < s2.end && s1.end > s2.start) {
+            return toast.error(`Overlapping slots detected on ${day.day}! Please fix them before saving.`, {
+              icon: '❌',
+              duration: 4000
+            });
+          }
+        }
+      }
+    }
+
     setIsSaving(true);
     
     if (!force) {
@@ -472,7 +574,13 @@ const DoctorAvailability = ({ t }) => {
                 type="date"
                 value={newHoliday}
                 onChange={(e) => setNewHoliday(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                min={(() => {
+                  const d = new Date();
+                  const year = d.getFullYear();
+                  const month = String(d.getMonth() + 1).padStart(2, '0');
+                  const day = String(d.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
+                })()}
                 className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
               />
               <button
@@ -511,7 +619,7 @@ const DoctorAvailability = ({ t }) => {
               <div className="space-y-2">
                 <h3 className="text-3xl font-black text-gray-900 leading-tight">Booking Conflict!</h3>
                 <p className="text-gray-500 font-bold text-sm">
-                  The changes you made will invalidate some existing appointments. Please review them carefully.
+                  You have active appointments during the times you're trying to block. You must resolve these conflicts before saving your new schedule.
                 </p>
               </div>
             </div>
@@ -546,18 +654,12 @@ const DoctorAvailability = ({ t }) => {
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <div className="pt-2">
               <button 
                 onClick={() => setShowWarning(false)}
-                className="flex-1 py-5 bg-gray-100 text-gray-500 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95"
+                className="w-full py-5 bg-gray-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 shadow-xl shadow-gray-200 transition-all active:scale-95"
               >
-                Cancel & Fix
-              </button>
-              <button 
-                onClick={() => handleSave(true)}
-                className="flex-1 py-5 bg-red-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-200 transition-all active:scale-95"
-              >
-                Save Anyway
+                I'll Review & Fix Conflicts
               </button>
             </div>
           </div>

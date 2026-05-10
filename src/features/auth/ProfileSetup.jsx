@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { doc, setDoc, updateDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { useAuth } from "../../context/AuthContext";
-import { User, Phone, MapPin, Award, Activity, Camera, Mail, ClipboardList } from "lucide-react";
+import { User, Phone, MapPin, Award, Activity, Camera, Mail, ClipboardList, Stethoscope } from "lucide-react";
 
 const ProfileSetup = () => {
   const { t } = useTranslation();
@@ -125,8 +125,8 @@ const ProfileSetup = () => {
       if (!data.gender) newErrors.gender = t("profile_setup.error_gender");
       if (!data.bloodGroup) newErrors.bloodGroup = t("profile_setup.error_blood_group");
     } else {
-      if (!String(data.specialization).trim() || data.specialization.trim().length < 5 || !/^[a-zA-Z\s]+$/.test(data.specialization)) {
-        newErrors.specialization = t("profile_setup.error_specialization");
+      if (!data.specialization || data.specialization === "") {
+        newErrors.specialization = t("profile_setup.error_required");
       }
       const expNum = parseInt(data.experience);
       if (isNaN(expNum) || expNum < 0 || expNum > 100) {
@@ -415,16 +415,37 @@ const ProfileSetup = () => {
               {/* DOCTOR FIELDS */}
                <div className="space-y-1">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <ClipboardList size={16} className="text-gray-400" /> {t("profile_setup.specialization")}
+                  <Stethoscope size={16} className="text-gray-400" /> {t("profile_setup.specialization")}
                 </label>
-                <input
-                  type="text"
+                <select
                   name="specialization"
-                  placeholder="Cardiologist"
                   value={formData.specialization}
                   onChange={handleInputChange}
-                  className={`input-standard ${errors.specialization ? 'border-red-500 focus:ring-red-100' : ''}`}
-                />
+                  className={`input-standard appearance-none bg-white cursor-pointer ${errors.specialization ? 'border-red-500 focus:ring-red-100' : ''}`}
+                >
+                  <option value="">{t("profile_setup.select_specialization") || "Select Specialization"}</option>
+                  <option value="General Physician">{t("profile_setup.spec_general_physician")}</option>
+                  <option value="Cardiologist">{t("profile_setup.spec_cardiologist")}</option>
+                  <option value="Dermatologist">{t("profile_setup.spec_dermatologist")}</option>
+                  <option value="Pediatrician">{t("profile_setup.spec_pediatrician")}</option>
+                  <option value="Orthopedic">{t("profile_setup.spec_orthopedic")}</option>
+                  <option value="Gynecologist">{t("profile_setup.spec_gynecologist")}</option>
+                  <option value="Ophthalmologist">{t("profile_setup.spec_ophthalmologist")}</option>
+                  <option value="Neurologist">{t("profile_setup.spec_neurologist")}</option>
+                  <option value="ENT Specialist">{t("profile_setup.spec_ent_specialist")}</option>
+                  <option value="Psychiatrist">{t("profile_setup.spec_psychiatrist")}</option>
+                  <option value="Dentist">{t("profile_setup.spec_dentist")}</option>
+                  <option value="Urologist">{t("profile_setup.spec_urologist")}</option>
+                  <option value="Oncologist">{t("profile_setup.spec_oncologist")}</option>
+                  <option value="Physiotherapist">{t("profile_setup.spec_physiotherapist")}</option>
+                  <option value="Dietitian">{t("profile_setup.spec_dietitian")}</option>
+                  <option value="Pulmonologist">{t("profile_setup.spec_pulmonologist")}</option>
+                  <option value="Gastroenterologist">{t("profile_setup.spec_gastroenterologist")}</option>
+                  <option value="Endocrinologist">{t("profile_setup.spec_endocrinologist")}</option>
+                  <option value="Nephrologist">{t("profile_setup.spec_nephrologist")}</option>
+                  <option value="Sexologist">{t("profile_setup.spec_sexologist")}</option>
+                  <option value="Psychologist">{t("profile_setup.spec_psychologist")}</option>
+                </select>
                 {errors.specialization && <p className="text-xs text-red-500 font-medium">{errors.specialization}</p>}
               </div>
 

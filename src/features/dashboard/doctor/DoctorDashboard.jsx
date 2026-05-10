@@ -9,7 +9,7 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import DoctorOverview from "./components/DoctorOverview";
-import DoctorAppointmentList from "./components/DoctorAppointmentList";
+import DoctorAppointment from "./components/DoctorAppointment";
 import DoctorProfileUpdate from "./components/DoctorProfileUpdate";
 import DoctorAvailability from "./components/DoctorAvailability";
 
@@ -132,7 +132,7 @@ const DoctorDashboard = () => {
       )}
 
       {activeTab === "appointments" && (
-        <DoctorAppointmentList
+        <DoctorAppointment
           t={t}
         />
       )}

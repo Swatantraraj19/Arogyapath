@@ -7,7 +7,7 @@ import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { logOut } from "../../../firebase/services/auth";
 import PatientOverview from "./components/PatientOverview";
 import SymptomChecker from "./components/SymptomChecker";
-import PatientAppointmentList from "./components/PatientAppointmentList";
+import PatientAppointment from "./components/PatientAppointment";
 import SymptomHistory from "./components/SymptomHistory";
 import PatientProfileUpdate from "./components/PatientProfileUpdate";
 import { useAuth } from "../../../context/AuthContext";
@@ -127,7 +127,7 @@ const PatientDashboard = () => {
       )}
 
       {activeTab === "appointments" && (
-        <PatientAppointmentList
+        <PatientAppointment
           t={t}
           initialSearch={suggestedSpecialty}
         />
