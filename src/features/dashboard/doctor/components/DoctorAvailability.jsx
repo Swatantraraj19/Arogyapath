@@ -174,24 +174,36 @@ const DoctorAvailability = ({ t }) => {
       const q = query(
         collection(db, "appointments"),
         where("doctorId", "==", currentUser.uid),
-        where("status", "==", "upcoming"),
-        where("time", "==", format12h(slot.start))
+        where("status", "==", "upcoming")
       );
       
       const querySnapshot = await getDocs(q);
-      const allUpcomingAtTime = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const allActiveAppts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // Filter to find only those on the same day of the week (e.g., all future Mondays)
-      const slotConflicts = allUpcomingAtTime.filter(app => {
-        const appDate = new Date(app.rawDate || app.date);
+      // Filter to find only those that match both the day of the week and the time range
+      const slotConflicts = allActiveAppts.filter(app => {
+        // 1️⃣ Check Day of Week
+        const dateParts = (app.rawDate || app.date).split("-");
+        let appDate;
+        if (dateParts.length === 3) {
+          appDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        } else {
+          appDate = new Date(app.rawDate || app.date);
+        }
+        
         const appDayName = appDate.toLocaleDateString('en-US', { weekday: 'long' });
-        return appDayName === day.day;
+        if (appDayName !== day.day) return false;
+
+        // 2️⃣ Check Time Range (Is the appointment inside this slot?)
+        const appTime24 = to24h(app.time);
+        // Condition: appTime is between slot.start (inclusive) and slot.end (exclusive)
+        return appTime24 >= slot.start && appTime24 < slot.end;
       }).map(app => ({ ...app, reason: "Time slot has active bookings" }));
 
       if (slotConflicts.length > 0) {
         setConflicts(slotConflicts);
         setShowWarning(true);
-        return; // Stop deletion if there's a real conflict on this day
+        return; 
       }
     } catch (error) {
       console.error("Conflict check failed:", error);
@@ -302,8 +314,9 @@ const DoctorAvailability = ({ t }) => {
       const upcomingAppts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       const foundConflicts = upcomingAppts.map(app => {
+        const appDateKey = app.rawDate || app.date;
         // 1. Check if date is blocked (Vacation Mode)
-        if (blockedDates.includes(app.date)) {
+        if (blockedDates.includes(appDateKey)) {
           return { ...app, reason: "Date is now a Holiday" };
         }
 

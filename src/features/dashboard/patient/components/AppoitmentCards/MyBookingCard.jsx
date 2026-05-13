@@ -11,7 +11,7 @@ const MyBookingCard = ({ app, onClick, onCancel, onRate }) => (
         {app.mode === 'video' ? <Video size={24} /> : <Building2 size={24} />}
       </div>
       <div className="text-left">
-        <h5 className={`font-black text-gray-900 leading-tight ${app.status === 'cancelled' ? 'line-through opacity-50' : ''}`}>{app.doctorName}</h5>
+        <h5 className={`font-black text-gray-900 leading-tight ${app.status === 'cancelled' ? 'opacity-50' : ''}`}>{app.doctorName}</h5>
         <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{app.date} • {app.time}</p>
       </div>
     </div>
@@ -36,6 +36,18 @@ const MyBookingCard = ({ app, onClick, onCancel, onRate }) => (
       ) : (
         <>
           <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-blue-100">Upcoming</span>
+          {app.meetingRoomId && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`https://meet.jit.si/${app.meetingRoomId}`, '_blank');
+              }}
+              className="text-[10px] font-black text-white bg-blue-600 px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-1.5 active:scale-95 animate-pulse"
+            >
+              <Video size={14} />
+              Join Call
+            </button>
+          )}
           <button
             onClick={(e) => { e.stopPropagation(); onCancel(app.id); }}
             className="text-[9px] font-black text-gray-400 hover:text-red-500 hover:bg-red-50 px-3 py-1 rounded-lg uppercase tracking-widest transition-all"

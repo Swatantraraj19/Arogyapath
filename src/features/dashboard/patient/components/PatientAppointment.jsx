@@ -30,6 +30,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
     isLocating
   } = useLocation();
   const [activeSubTab, setActiveSubTab] = useState("find");
+  const [bookingStatusTab, setBookingStatusTab] = useState("upcoming"); // 🕒 Track Upcoming, Completed, Cancelled
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
   const [isListening, setIsListening] = useState(false);
@@ -75,12 +76,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const sortedBookings = bookings.sort((a, b) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      });
-      setMyBookings(sortedBookings);
+      setMyBookings(bookings);
     });
     return () => unsubscribe();
   }, [currentUser]);
@@ -223,7 +219,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         const end = parseMinutes(interval.end);
         while (current + duration <= end) {
           const slot = format12h(formatFromMinutes(current));
-          
+
           // 🕒 Check if slot is in the past (only for today)
           let isPast = false;
           const today = new Date();
@@ -243,10 +239,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
 
           const isTaken = bookedSlots.some(b => b.date === dateStr && b.time === slot);
           if (!generatedSlots.some(s => s.time === slot)) {
-            generatedSlots.push({ 
-              time: slot, 
+            generatedSlots.push({
+              time: slot,
               isBooked: isTaken || isPast,
-              isPast: isPast 
+              isPast: isPast
             });
           }
           current += duration;
@@ -281,6 +277,11 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         generatedId += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       await runTransaction(db, async (transaction) => {
+        // 🛡️ Fetch Patient Data within transaction
+        const pRef = doc(db, "patients", currentUser.uid);
+        const pSnap = await transaction.get(pRef);
+        const pData = pSnap.exists() ? pSnap.data() : {};
+
         const lockSnap = await transaction.get(lockRef);
         if (lockSnap.exists()) {
           throw new Error("This slot has just been booked by someone else!");
@@ -288,7 +289,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         const appointmentData = {
           bookingId: generatedId,
           patientId: currentUser.uid,
-          patientName: realPatientName,
+          patientName: pData.fullName || currentUser.displayName || "Patient",
+          patientAge: pData.age || "N/A",
+          patientGender: pData.gender || "N/A",
+          patientPhone: pData.phone || currentUser.phoneNumber || "N/A",
           doctorId: selectedDoctor.id,
           doctorName: selectedDoctor.fullName || selectedDoctor.name,
           doctorPhone: selectedDoctor.phone || "N/A",
@@ -340,9 +344,21 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   const handleCancelAppointment = useCallback(async (appId) => {
     if (window.confirm("Are you sure?")) {
       try {
-        await setDoc(doc(db, "appointments", appId), { status: 'cancelled' }, { merge: true });
+        const { deleteDoc, getDoc } = await import("firebase/firestore");
+        const appRef = doc(db, "appointments", appId);
+        const appSnap = await getDoc(appRef);
+        
+        if (appSnap.exists()) {
+          const appData = appSnap.data();
+          // 🛡️ Construct lockId: doctorId_rawDate_time
+          const lockId = `${appData.doctorId}_${appData.rawDate}_${appData.time.replace(/\s+/g, '')}`;
+          await deleteDoc(doc(db, "slot_locks", lockId));
+        }
+
+        await setDoc(appRef, { status: 'cancelled' }, { merge: true });
         toast.success("Appointment Cancelled Successfully");
       } catch (error) {
+        console.error("Cancellation Error:", error);
         toast.error("Failed to cancel appointment");
       }
     }
@@ -351,13 +367,43 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   const submitRating = useCallback(async () => {
     if (ratingValue === 0) return toast.error("Please select stars");
     try {
-      await setDoc(doc(db, "appointments", ratingAppointmentId), {
-        hasRated: true,
-        rating: ratingValue
-      }, { merge: true });
+      const { doc, runTransaction } = await import("firebase/firestore");
+      
+      await runTransaction(db, async (transaction) => {
+        const appRef = doc(db, "appointments", ratingAppointmentId);
+        const appSnap = await transaction.get(appRef);
+        if (!appSnap.exists()) throw new Error("Appointment not found");
+        
+        const appData = appSnap.data();
+        const docRef = doc(db, "doctors", appData.doctorId);
+        const docSnap = await transaction.get(docRef);
+        
+        if (docSnap.exists()) {
+          const docData = docSnap.data();
+          const oldPoints = Number(docData.totalRatingPoints || 0);
+          const oldCount = Number(docData.reviewCount || 0);
+          
+          const newPoints = oldPoints + ratingValue;
+          const newCount = oldCount + 1;
+          const newAvg = (newPoints / newCount).toFixed(1);
+          
+          transaction.update(docRef, {
+            totalRatingPoints: newPoints,
+            reviewCount: newCount,
+            rating: newAvg
+          });
+        }
+        
+        transaction.update(appRef, {
+          hasRated: true,
+          rating: ratingValue
+        });
+      });
+
       setIsRatingModalOpen(false);
-      toast.success("Thank you for your feedback!");
+      toast.success("Thank you for your feedback!", { icon: '⭐' });
     } catch (error) {
+      console.error("Rating Error:", error);
       toast.error("Failed to submit rating");
     }
   }, [ratingValue, ratingAppointmentId]);
@@ -412,12 +458,54 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
 
   const filteredBookings = useMemo(() => {
     const query = debouncedSearchQuery.toLowerCase().trim();
-    return myBookings.filter(app =>
-      (app.doctorName || "").toLowerCase().includes(query) ||
-      (app.bookingId || "").toLowerCase().includes(query) ||
-      (app.specialty || "").toLowerCase().includes(query)
-    );
-  }, [debouncedSearchQuery, myBookings]);
+    
+    // 🛠️ Helper for 24h conversion (needed for sorting)
+    const to24h = (timeStr) => {
+      if (!timeStr) return "00:00";
+      const parts = timeStr.split(' ');
+      if (parts.length < 2) return "00:00";
+      const [time, modifier] = parts;
+      let [hours, minutes] = time.split(':');
+      if (hours === '12') hours = '00';
+      if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    };
+
+    let result = myBookings.filter(app => {
+      // 1. 🔍 Search Filtering
+      const matchesSearch = (app.doctorName || "").toLowerCase().includes(query) ||
+                            (app.bookingId || "").toLowerCase().includes(query) ||
+                            (app.specialty || "").toLowerCase().includes(query);
+      
+      if (!matchesSearch) return false;
+
+      // 2. 📑 Tab Filtering
+      if (bookingStatusTab === "upcoming") {
+        return app.status === "upcoming";
+      } else if (bookingStatusTab === "completed") {
+        return app.status === "completed";
+      } else if (bookingStatusTab === "cancelled") {
+        return app.status === "cancelled";
+      }
+      return true;
+    });
+
+    // 🔄 Dynamic Sorting: Ascending for Upcoming, Descending for others
+    result.sort((a, b) => {
+      const dateA = a.rawDate || a.date || "";
+      const dateB = b.rawDate || b.date || "";
+      const dateDiff = dateA.localeCompare(dateB);
+
+      const multiplier = bookingStatusTab === "upcoming" ? 1 : -1;
+
+      if (dateDiff !== 0) return dateDiff * multiplier;
+      
+      // Time comparison if dates are same
+      return to24h(a.time).localeCompare(to24h(b.time)) * multiplier;
+    });
+
+    return result;
+  }, [debouncedSearchQuery, myBookings, bookingStatusTab]);
 
   return (
     <div className="space-y-8 animate-in slide-in-from-right-8 duration-700 pb-20">
@@ -445,6 +533,25 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
           </div>
         </div>
       </div>
+      
+      {/* 📑 Status Tabs for My Bookings */}
+      {activeSubTab === "my" && (
+        <div className="flex flex-wrap gap-2 px-1 animate-in fade-in slide-in-from-left-4 duration-500">
+          {["upcoming", "completed", "cancelled"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setBookingStatusTab(tab)}
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                bookingStatusTab === tab
+                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100 scale-105"
+                  : "bg-white text-gray-400 border border-gray-100 hover:border-emerald-200 hover:text-gray-600"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      )}
 
       {activeSubTab === "find" ? (
         !externalCity ? (
@@ -475,8 +582,8 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       )}
 
       {/* RENDER MODALS */}
-      <RatingModal 
-        isOpen={isRatingModalOpen} 
+      <RatingModal
+        isOpen={isRatingModalOpen}
         onClose={() => setIsRatingModalOpen(false)}
         ratingValue={ratingValue}
         setRatingValue={setRatingValue}
@@ -485,7 +592,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         onSubmit={submitRating}
       />
 
-      <BookingModal 
+      <BookingModal
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
         bookingStep={bookingStep}
