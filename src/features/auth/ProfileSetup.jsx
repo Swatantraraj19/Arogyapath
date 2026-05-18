@@ -101,7 +101,7 @@ const ProfileSetup = () => {
         setPreview(URL.createObjectURL(compressed));
         if (errors.photo) setErrors({ ...errors, photo: null });
       } catch (err) {
-        toast.error("Failed to process image");
+        toast.error(t("profile_setup.failed_image"));
       } finally {
         setLoading(false);
       }
@@ -152,7 +152,7 @@ const ProfileSetup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!currentUser) return toast.error("User session not found. Please log in again.");
+    if (!currentUser) return toast.error(t("profile_setup.session_not_found"));
     if (!validateForm(formData)) return toast.error(t("profile_setup.error_fix"));
 
     try {
@@ -161,7 +161,7 @@ const ProfileSetup = () => {
       // ☁️ CLOUDINARY UPLOAD
       let photoUrl = preview;
       if (image) {
-        toast.loading("Uploading profile photo...", { id: "uploading" });
+        toast.loading(t("profile_setup.uploading_photo"), { id: "uploading" });
         photoUrl = await uploadImageToCloudinary(image);
         toast.dismiss("uploading");
       }
@@ -383,7 +383,7 @@ const ProfileSetup = () => {
                   onChange={handleInputChange}
                   className={`input-standard bg-white ${errors.gender ? 'border-red-500 focus:ring-red-100' : ''}`}
                 >
-                  <option value="">Select</option>
+                  <option value="">{t("profile_setup.select")}</option>
                   <option value="male">{t("profile_setup.gender_male")}</option>
                   <option value="female">{t("profile_setup.gender_female")}</option>
                   <option value="other">{t("profile_setup.gender_other")}</option>
@@ -401,7 +401,7 @@ const ProfileSetup = () => {
                   onChange={handleInputChange}
                   className={`input-standard bg-white ${errors.bloodGroup ? 'border-red-500 focus:ring-red-100' : ''}`}
                 >
-                  <option value="">Select</option>
+                  <option value="">{t("profile_setup.select")}</option>
                   {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
                     <option key={bg} value={bg}>{bg}</option>
                   ))}
@@ -529,7 +529,7 @@ const ProfileSetup = () => {
             onClick={() => navigate("/role-entry", { replace: true })}
             className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition"
           >
-            ← Change Role
+            ← {t("profile_setup.change_role")}
           </button>
         </div>
 

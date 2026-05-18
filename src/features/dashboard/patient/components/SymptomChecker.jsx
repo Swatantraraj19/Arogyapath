@@ -27,19 +27,19 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
         const transcript = Array.from(event.results).map(r => r[0].transcript).join("");
         if (transcript.length <= 500) setSymptomText(transcript);
       };
-      recognitionRef.current.onerror = () => { setIsListening(false); toast.error("Speech failed."); };
+      recognitionRef.current.onerror = () => { setIsListening(false); toast.error(t("symptom_checker.speech_failed")); };
       recognitionRef.current.onend = () => setIsListening(false);
     }
   }, []);
 
   const toggleListening = () => {
-    if (!recognitionRef.current) return toast.error("Not supported.");
+    if (!recognitionRef.current) return toast.error(t("symptom_checker.not_supported"));
     if (isListening) { recognitionRef.current.stop(); }
     else { setSymptomText(""); recognitionRef.current.start(); setIsListening(true); }
   };
 
   const handleAnalyzeSymptoms = async () => {
-    if (!symptomText.trim()) return toast.error("Describe symptoms");
+    if (!symptomText.trim()) return toast.error(t("symptom_checker.describe_symptoms_error"));
     try {
       if (isListening && recognitionRef.current) {
         recognitionRef.current.stop();
@@ -62,13 +62,13 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
         <div className="relative z-10 space-y-4">
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/15 backdrop-blur-md rounded-full text-[9px] font-bold uppercase tracking-wider border border-white/10">
-              <Sparkles size={12} className="text-yellow-300" /> Smart Guidance Active
+              <Sparkles size={12} className="text-yellow-300" /> {t("symptom_checker.smart_guidance_active")}
             </div>
           </div>
 
           <div className="space-y-1 text-left">
-            <h3 className="text-3xl font-bold tracking-tight">How are you feeling today?</h3>
-            <p className="text-emerald-50/70 text-xs italic">Describe symptoms for guidance</p>
+            <h3 className="text-3xl font-bold tracking-tight">{t("symptom_checker.how_feeling")}</h3>
+            <p className="text-emerald-50/70 text-xs italic">{t("symptom_checker.describe_for_guidance")}</p>
           </div>
 
           <div className="bg-black/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-4 relative">
@@ -77,7 +77,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                 <textarea
                   value={symptomText}
                   onChange={(e) => e.target.value.length <= 500 && setSymptomText(e.target.value)}
-                  placeholder={isListening ? "Listening to your symptoms..." : "Type symptoms here (e.g.- chest pain, sar dard)..."}
+                  placeholder={isListening ? t("symptom_checker.listening") : t("symptom_checker.placeholder")}
                   className="w-full bg-transparent border-none text-white placeholder:text-white/30 text-lg font-semibold focus:ring-0 focus:outline-none min-h-[80px] resize-none pr-10"
                 />
                 {symptomText && (
@@ -90,7 +90,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                       }
                     }}
                     className="absolute top-0 right-0 p-2 text-white/40 hover:text-white transition-colors"
-                    title="Clear text"
+                    title={t("symptom_checker.clear_text")}
                   >
                     <X size={18} />
                   </button>
@@ -114,7 +114,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                 className="bg-white text-emerald-700 px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 {isAnalyzing ? <div className="w-4 h-4 border-2 border-emerald-200 border-t-emerald-700 rounded-full animate-spin" /> : <BrainCircuit size={18} />}
-                {isAnalyzing ? "Analyzing..." : "Analyze Now"}
+                {isAnalyzing ? t("symptom_checker.analyzing") : t("symptom_checker.analyze_now")}
               </button>
             </div>
           </div>
@@ -127,7 +127,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
           {assessment.emergency && (
             <div className="bg-red-600 text-white p-4 rounded-2xl flex items-center gap-4 shadow-lg border-2 border-red-400/20">
               <ShieldAlert size={24} className="shrink-0" />
-              <div className="text-xs font-bold uppercase tracking-tight">Emergency Alert: Seek medical evaluation immediately.</div>
+              <div className="text-xs font-bold uppercase tracking-tight">{t("symptom_checker.emergency_alert")}</div>
             </div>
           )}
 
@@ -136,8 +136,8 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/50"><Stethoscope size={20} /></div>
                 <div className="text-left">
-                  <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-emerald-200 text-emerald-700">Assessment Result</span>
-                  <h4 className="text-base font-bold text-gray-900 leading-tight">Guidance Summary</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-emerald-200 text-emerald-700">{t("symptom_checker.assessment_result")}</span>
+                  <h4 className="text-base font-bold text-gray-900 leading-tight">{t("symptom_checker.guidance_summary")}</h4>
                 </div>
               </div>
             </div>
@@ -147,16 +147,16 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                 {/* 👨‍⚕️ SPECIALIST INFO */}
                 <div className="space-y-2 text-left">
                   <div className="space-y-1">
-                    <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">Primary Specialist</h5>
+                    <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.primary_specialist")}</h5>
                     <div className="p-3 bg-emerald-50/20 rounded-2xl border border-emerald-100/30 flex flex-col items-start">
-                      <span className="text-[8px] font-black text-emerald-600/60 uppercase">Recommended</span>
+                      <span className="text-[8px] font-black text-emerald-600/60 uppercase">{t("symptom_checker.recommended")}</span>
                       <h3 className="text-lg font-black text-emerald-800 leading-none">{assessment.primarySpecialist}</h3>
                     </div>
                   </div>
 
                   {assessment.secondarySpecialists.length > 0 && (
                     <div className="space-y-1">
-                      <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[7px]">Also Recommended</h5>
+                      <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[7px]">{t("symptom_checker.also_recommended")}</h5>
                       <div className="flex flex-wrap gap-1">
                         {assessment.secondarySpecialists.map((s, i) => (
                           <span key={i} className="px-2.5 py-1 bg-gray-50 text-gray-600 rounded-lg text-[9px] font-bold border border-gray-100">{s}</span>
@@ -168,7 +168,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
 
                 {/* ✅ SUGGESTED ACTIONS */}
                 <div className="space-y-2 text-left">
-                  <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">Suggested Actions</h5>
+                  <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.suggested_actions")}</h5>
                   <div className="grid grid-cols-1 gap-1">
                     {assessment.precautions?.map((p, i) => (
                       <div key={i} className="px-3 py-1.5 bg-emerald-50/50 text-emerald-800 rounded-lg text-[12px] font-bold border border-emerald-100/20 flex items-center gap-2">
@@ -191,34 +191,34 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                 <button
                   onClick={() => {
                     if (!externalCity) {
-                      toast.error("Select your location first!", { icon: "📍" });
+                      toast.error(t("symptom_checker.select_location_first"), { icon: "📍" });
                       return;
                     }
                     setActiveTab("appointments", assessment.primarySpecialist);
                   }}
                   className={`flex flex-col items-center p-4 text-white rounded-3xl transition-all shadow-lg active:scale-[0.98] text-center h-full group ${assessment.emergency ? 'bg-red-600 hover:bg-red-700 shadow-red-900/10' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/10'}`}
                 >
-                  <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80 mb-1.5">Recommended Path</span>
-                  <h5 className="text-sm font-black leading-tight mb-3">Consult {assessment.primarySpecialist}</h5>
+                  <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80 mb-1.5">{t("symptom_checker.recommended_path")}</span>
+                  <h5 className="text-sm font-black leading-tight mb-3">{t("symptom_checker.consult")} {assessment.primarySpecialist}</h5>
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-[8px] font-black uppercase tracking-widest group-hover:gap-3 transition-all">
-                    Book Now <ChevronRight size={10} />
+                    {t("symptom_checker.book_now")} <ChevronRight size={10} />
                   </div>
                 </button>
 
                 <button
                   onClick={() => {
                     if (!externalCity) {
-                      toast.error("Select your location first!", { icon: "📍" });
+                      toast.error(t("symptom_checker.select_location_first"), { icon: "📍" });
                       return;
                     }
                     setActiveTab("appointments", "");
                   }}
                   className="flex flex-col items-center p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-3xl hover:bg-gray-100 transition-all active:scale-[0.98] text-center h-full group"
                 >
-                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1.5">Manual Path</span>
-                  <h5 className="text-sm font-black leading-tight mb-3">Search All Doctors</h5>
+                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1.5">{t("symptom_checker.manual_path")}</span>
+                  <h5 className="text-sm font-black leading-tight mb-3">{t("symptom_checker.search_all_doctors")}</h5>
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[8px] font-black uppercase tracking-widest group-hover:gap-3 transition-all">
-                    Book Now <ChevronRight size={10} />
+                    {t("symptom_checker.book_now")} <ChevronRight size={10} />
                   </div>
                 </button>
               </div>

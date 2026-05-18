@@ -33,7 +33,7 @@ const SYMPTOM_RULES = [
     id: "cardiology",
     keywords: ["heart", "chest pain", "palpitation", "arrhythmia", "seene me dard"],
     aliases: ["chest tightness", "pain in chest", "breathing issue"],
-    specialty: { en: "Cardiologist", hi: "हृदय रोग विशेषज्ञ" },
+    specialty: { en: "Cardiologist", hi: "Cardiologist" },
     possibleIssues: { en: ["Cardiac evaluation required"], hi: ["हृदय मूल्यांकन की आवश्यकता है"] },
     precautions: { en: ["Rest immediately", "Avoid exertion", "Seek emergency help"], hi: ["तुरंत आराम करें", "परिश्रम से बचें", "आपातकालीन सहायता लें"] },
     baseSeverity: "high"
@@ -42,7 +42,7 @@ const SYMPTOM_RULES = [
     id: "dermatology",
     keywords: ["skin", "rash", "itch", "pimple", "acne", "khujli"],
     aliases: ["skin allergy", "red spots", "itching", "skin problem"],
-    specialty: { en: "Dermatologist", hi: "त्वचा विशेषज्ञ" },
+    specialty: { en: "Dermatologist", hi: "Dermatologist" },
     possibleIssues: { en: ["Dermatological assessment suggested"], hi: ["त्वचा मूल्यांकन का सुझाव"] },
     precautions: { en: ["Avoid scratching", "Keep area clean", "Apply soothing lotion"], hi: ["खुजली न करें", "क्षेत्र को साफ रखें", "सुखदायक लोशन लगाएं"] },
     baseSeverity: "low"
@@ -51,7 +51,7 @@ const SYMPTOM_RULES = [
     id: "neurology",
     keywords: ["headache", "migraine", "dizzy", "nerve", "sar dard"],
     aliases: ["blurred vision", "fainting", "head pain", "chakkar"],
-    specialty: { en: "Neurologist", hi: "न्यूरोलॉजिस्ट" },
+    specialty: { en: "Neurologist", hi: "Neurologist" },
     possibleIssues: { en: ["Neurological assessment needed"], hi: ["न्यूरोलॉजिकल मूल्यांकन की आवश्यकता"] },
     precautions: { en: ["Rest in dark room", "Hydrate well", "Monitor symptoms"], hi: ["अंधेरे कमरे में आराम करें", "अच्छी तरह से हाइड्रेट रहें", "लक्षणों की निगरानी करें"] },
     baseSeverity: "medium"
@@ -105,13 +105,15 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
         if (isEmergency && rule.id === "cardiology" && rawInput.includes("chest")) score += 10;
         const confidence = Math.min((score / 10) * 100, 100);
         
+        const isHindi = language && language.startsWith('hi');
+        
         if (confidence >= MIN_CONFIDENCE || (isEmergency && rule.id === "cardiology")) {
           matches.push({
             ...rule,
             confidence: Math.round(confidence),
-            displaySpecialty: rule.specialty[language] || rule.specialty['en'],
-            displayPrecautions: rule.precautions[language] || rule.precautions['en'],
-            displayIssues: rule.possibleIssues[language] || rule.possibleIssues['en']
+            displaySpecialty: (isHindi && rule.specialty['hi']) ? rule.specialty['hi'] : rule.specialty['en'],
+            displayPrecautions: (isHindi && rule.precautions['hi']) ? rule.precautions['hi'] : rule.precautions['en'],
+            displayIssues: (isHindi && rule.possibleIssues['hi']) ? rule.possibleIssues['hi'] : rule.possibleIssues['en']
           });
         }
       }
@@ -133,12 +135,14 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
 };
 
 const formatFinalResponse = (matches, isEmergency, language) => {
+  const isHindi = language && language.startsWith('hi');
+  
   if (matches.length === 0) {
     return {
-      suggestion: language === 'hi' ? "कृपया सामान्य चिकित्सक से सलाह लें।" : "Please consult a General Physician.",
-      primarySpecialist: language === 'hi' ? "सामान्य चिकित्सक" : "General Physician",
+      suggestion: isHindi ? "कृपया सामान्य चिकित्सक से सलाह लें।" : "Please consult a General Physician.",
+      primarySpecialist: "General Physician",
       secondarySpecialists: [],
-      precautions: language === 'hi' ? ["आराम करें", "पर्याप्त पानी पिएं"] : ["Rest well", "Stay hydrated"],
+      precautions: isHindi ? ["आराम करें", "पर्याप्त पानी पिएं"] : ["Rest well", "Stay hydrated"],
       possibleIssues: [],
       confidence: 0,
       emergency: isEmergency,
@@ -151,7 +155,7 @@ const formatFinalResponse = (matches, isEmergency, language) => {
   const secondary = matches.slice(1, 3).map(m => m.displaySpecialty);
 
   return {
-    suggestion: language === 'hi' 
+    suggestion: isHindi 
       ? `प्राथमिक सुझाव: ${primary.displaySpecialty} मूल्यांकन।`
       : `Primary Guidance: ${primary.displaySpecialty} evaluation recommended.`,
     primarySpecialist: primary.displaySpecialty,

@@ -68,7 +68,7 @@ const RoleEntry = () => {
 
   const handleContinue = async () => {
     if (!selectedRole) {
-      toast.error("Please select a role to continue");
+      toast.error(t("role_entry.select_role_error"));
       return;
     }
     
@@ -142,7 +142,7 @@ const RoleEntry = () => {
                 ${selectedRole === role.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
                 ${role.color}
               `}>
-                <span className="text-sm uppercase tracking-wider">Select This Role</span>
+                <span className="text-sm uppercase tracking-wider">{t("role_entry.select_this_role")}</span>
                 <ArrowRight size={16} />
               </div>
             </div>
@@ -183,7 +183,7 @@ const RoleEntry = () => {
         }}
         className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition"
       >
-        ← Logout
+        ← {t("role_entry.logout")}
       </button>
 
     </div>

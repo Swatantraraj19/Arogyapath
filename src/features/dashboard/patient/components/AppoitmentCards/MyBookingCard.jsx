@@ -1,7 +1,7 @@
 import React from "react";
 import { Video, Building2, CheckCircle2 } from "lucide-react";
 
-const MyBookingCard = ({ app, onClick, onCancel, onRate }) => (
+const MyBookingCard = ({ app, onClick, onCancel, onRate, t }) => (
   <div
     onClick={() => onClick(app)}
     className={`bg-white p-5 rounded-3xl border border-gray-100 flex items-center justify-between gap-4 hover:shadow-xl hover:-translate-y-1 cursor-pointer transition-all ${app.status === 'cancelled' ? 'opacity-60' : ''}`}
@@ -19,23 +19,23 @@ const MyBookingCard = ({ app, onClick, onCancel, onRate }) => (
     <div className="flex flex-col items-end gap-2 shrink-0 min-w-[110px]">
       {app.status === 'completed' ? (
         <>
-          <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">Completed</span>
+          <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">{t("patient_appointments.completed")}</span>
           {!app.hasRated ? (
             <button
               onClick={(e) => { e.stopPropagation(); onRate(app.id); }}
               className="text-[10px] font-black text-white bg-amber-500 px-4 py-1.5 rounded-xl uppercase tracking-widest hover:bg-amber-600 transition-all shadow-md shadow-amber-900/10 active:scale-95"
             >
-              Rate Now
+              {t("patient_appointments.rate_now")}
             </button>
           ) : (
-            <span className="text-[9px] font-black text-gray-400 flex items-center gap-1 mt-1"><CheckCircle2 size={10} className="text-emerald-500" /> Rated</span>
+            <span className="text-[9px] font-black text-gray-400 flex items-center gap-1 mt-1"><CheckCircle2 size={10} className="text-emerald-500" /> {t("patient_appointments.rated")}</span>
           )}
         </>
       ) : app.status === 'cancelled' ? (
-        <span className="text-[9px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-red-100">Cancelled</span>
+        <span className="text-[9px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-red-100">{t("patient_appointments.cancelled")}</span>
       ) : (
         <>
-          <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-blue-100">Upcoming</span>
+          <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-blue-100">{t("patient_appointments.upcoming")}</span>
           {app.meetingRoomId && (
             <button
               onClick={(e) => {
@@ -45,14 +45,14 @@ const MyBookingCard = ({ app, onClick, onCancel, onRate }) => (
               className="text-[10px] font-black text-white bg-blue-600 px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-1.5 active:scale-95 animate-pulse"
             >
               <Video size={14} />
-              Join Call
+              {t("patient_appointments.join_call")}
             </button>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onCancel(app.id); }}
             className="text-[9px] font-black text-gray-400 hover:text-red-500 hover:bg-red-50 px-3 py-1 rounded-lg uppercase tracking-widest transition-all"
           >
-            Cancel
+            {t("patient_appointments.cancel")}
           </button>
         </>
       )}

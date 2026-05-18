@@ -48,7 +48,7 @@ const Signup = () => {
 
     // Password Check
     if (formData.password && !isPasswordValid) {
-      setPasswordError("Password must be at least 6 characters");
+      setPasswordError(t("auth.errorPasswordLength"));
     } else {
       setPasswordError("");
     }
@@ -74,7 +74,7 @@ const Signup = () => {
         createdAt: serverTimestamp()
       });
 
-      toast.success("Account created successfully!");
+      toast.success(t("auth.accountCreated"));
       navigate("/role-entry", { replace: true });
     } catch (error) {
       // 🛡️ Cleanup key if signup fails
@@ -105,7 +105,7 @@ const Signup = () => {
         createdAt: serverTimestamp()
       }, { merge: true });
 
-      toast.success("Welcome to ArogyaPath!");
+      toast.success(t("welcome"));
       navigate("/role-entry", { replace: true });
     } catch (error) {
       // 🛡️ Cleanup key if signup fails
@@ -126,7 +126,7 @@ const Signup = () => {
 
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-bold text-gray-900">
-            Sign Up
+            {t("auth.signup")}
           </h2>
         </div>
 

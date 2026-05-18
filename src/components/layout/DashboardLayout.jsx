@@ -26,7 +26,7 @@ const DashboardLayout = ({
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dropdownRef = useRef(null);
   const locRef = useRef(null);
   const [locSearch, setLocSearch] = useState("");
@@ -90,7 +90,7 @@ const DashboardLayout = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
           <div className="animate-in slide-in-from-left duration-700">
             <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
-              Hello, <span className={`text-${roleColor}-600`}>{welcomeName}</span>
+              {t("dashboard.hello")} <span className={`text-${roleColor}-600`}>{welcomeName}</span>
             </h2>
           </div>
 

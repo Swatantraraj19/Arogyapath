@@ -80,21 +80,21 @@ const Login = () => {
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
-      toast.error("Please enter your email address first");
+      toast.error(t("auth.errorEmailRequired"));
       return;
     }
     if (emailError) {
-      toast.error("Please enter a valid email address");
+      toast.error(t("auth.invalidEmail"));
       return;
     }
 
     try {
       setLoading(true);
       await resetPassword(formData.email.trim());
-      toast.success("Password reset email sent! Check your inbox.");
+      toast.success(t("auth.resetEmailSent"));
     } catch (error) {
       console.error("Reset Error:", error.code);
-      toast.error("Failed to send reset email. Please try again.");
+      toast.error(t("auth.resetEmailFailed"));
     } finally {
       setLoading(false);
     }
@@ -137,7 +137,7 @@ const Login = () => {
 
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-bold text-gray-900">
-            Login
+            {t("auth.login")}
           </h2>
         </div>
 

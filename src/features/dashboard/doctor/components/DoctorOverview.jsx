@@ -1,14 +1,58 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Users, Clock, Check, ClipboardList, Star, Heart, Calendar } from "lucide-react";
+import { db } from "../../../../firebase/config";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { useAuth } from "../../../../context/AuthContext";
 
 const DoctorOverview = ({ t, onViewSchedule }) => {
-  const todayBookingsCount = "12"; // This will eventually come from real data
+  const { currentUser } = useAuth();
+  const [appointments, setAppointments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    // 📥 Fetch ALL appointments for this doctor to calculate stats
+    const q = query(
+      collection(db, "appointments"),
+      where("doctorId", "==", currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data());
+      setAppointments(data);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  const metrics = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    const totalBookings = appointments.length;
+    const todayCount = appointments.filter(a => (a.rawDate || a.date) === today).length;
+    const completedCount = appointments.filter(a => a.status === "completed").length;
+    
+    // Calculate Avg Rating
+    const ratings = appointments.filter(a => a.rating > 0).map(a => a.rating);
+    const avgRating = ratings.length > 0 
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) 
+      : "0.0";
+
+    return {
+      totalBookings: totalBookings,
+      todayBookings: todayCount,
+      completed: completedCount,
+      avgRating: avgRating
+    };
+  }, [appointments]);
 
   const stats = [
-    { icon: <Users size={24} />, label: "Total Patients", value: "1,284", color: "text-blue-600", bg: "bg-blue-50" },
-    { icon: <Calendar size={24} />, label: "Today's Bookings", value: todayBookingsCount, color: "text-indigo-600", bg: "bg-indigo-50" },
-    { icon: <Star size={24} />, label: "Avg Rating", value: "4.9", color: "text-amber-600", bg: "bg-amber-50" },
-    { icon: <Check size={24} />, label: "Completed", value: "850+", color: "text-emerald-600", bg: "bg-emerald-50" },
+    { icon: <ClipboardList size={24} />, label: t("doctor_dashboard.total_bookings"), value: metrics.totalBookings, color: "text-blue-600", bg: "bg-blue-50" },
+    { icon: <Calendar size={24} />, label: t("doctor_dashboard.todays_bookings"), value: metrics.todayBookings, color: "text-indigo-600", bg: "bg-indigo-50" },
+    { icon: <Star size={24} />, label: t("doctor_dashboard.avg_rating"), value: metrics.avgRating, color: "text-amber-600", bg: "bg-amber-50" },
+    { icon: <Check size={24} />, label: t("doctor_dashboard.completed"), value: metrics.completed, color: "text-emerald-600", bg: "bg-emerald-50" },
   ];
 
   return (
@@ -20,13 +64,13 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
           <div className="flex-1 space-y-8 text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest">
               <Heart size={14} className="text-red-400 fill-red-400" />
-              Your dedication is making a difference today
+              {t("doctor_dashboard.dedication_note")}
             </div>
             <h3 className="text-4xl md:text-[3.1rem] font-black leading-[1] tracking-tighter max-w-2xl">
               {t('doctor_dashboard.hero_title')}
             </h3>
             <p className="text-blue-100 text-xl font-medium leading-relaxed max-w-lg opacity-90">
-              Your schedule for today is well-balanced. You have {todayBookingsCount} confirmed appointments.
+              {t("doctor_dashboard.schedule_status", { count: metrics.todayBookings })}
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
@@ -54,7 +98,7 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
       {/* 📊 PRACTICE STATS */}
       <div className="space-y-8">
         <div className="flex items-center justify-between px-2">
-          <h4 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Performance Overview</h4>
+          <h4 className="text-xl font-black text-gray-900 uppercase tracking-tighter">{t("doctor_dashboard.performance_overview")}</h4>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, i) => (

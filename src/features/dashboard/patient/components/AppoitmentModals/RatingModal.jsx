@@ -1,7 +1,7 @@
 import React from "react";
 import { Star } from "lucide-react";
 
-const RatingModal = ({ isOpen, onClose, ratingValue, setRatingValue, hoverRating, setHoverRating, onSubmit }) => {
+const RatingModal = ({ isOpen, onClose, ratingValue, setRatingValue, hoverRating, setHoverRating, onSubmit, t }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -10,8 +10,8 @@ const RatingModal = ({ isOpen, onClose, ratingValue, setRatingValue, hoverRating
           <Star size={32} className="fill-amber-600" />
         </div>
         <div>
-          <h3 className="text-2xl font-black text-gray-900">Rate your visit</h3>
-          <p className="text-gray-500 text-xs font-medium mt-1">How was your experience?</p>
+          <h3 className="text-2xl font-black text-gray-900">{t("patient_appointments.rate_visit")}</h3>
+          <p className="text-gray-500 text-xs font-medium mt-1">{t("patient_appointments.rate_desc")}</p>
         </div>
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map((s) => (
@@ -29,7 +29,7 @@ const RatingModal = ({ isOpen, onClose, ratingValue, setRatingValue, hoverRating
           ))}
         </div>
         <button onClick={onSubmit} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black">
-          Submit Review
+          {t("patient_appointments.submit_review")}
         </button>
       </div>
     </div>

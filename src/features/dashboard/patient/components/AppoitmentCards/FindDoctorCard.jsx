@@ -24,7 +24,7 @@ const FindDoctorCard = ({ doc, t, onBook }) => (
 
       <div className="flex items-center justify-between py-3 border-y border-gray-50 mb-4">
         <div className="flex flex-col text-left">
-          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-left">Rating</span>
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-left">{t("patient_appointments.rating")}</span>
           <div className="flex items-center gap-1 mt-0.5">
             <Star size={11} className="text-amber-400 fill-amber-400" />
             <span className="text-xs font-black text-gray-700">{doc.rating || "4.8"}</span>
@@ -32,7 +32,7 @@ const FindDoctorCard = ({ doc, t, onBook }) => (
         </div>
         <div className="w-px h-6 bg-gray-100"></div>
         <div className="flex flex-col items-end text-right">
-          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Experience</span>
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t("patient_appointments.experience")}</span>
           <span className="text-xs font-black text-gray-700 mt-0.5">{doc.experience || "10 yrs"}</span>
         </div>
       </div>
@@ -52,7 +52,7 @@ const FindDoctorCard = ({ doc, t, onBook }) => (
         </div>
       </div>
     </div>
-    <button onClick={() => onBook(doc)} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-black text-xs hover:bg-emerald-600 transition-all active:scale-95 shadow-lg shadow-gray-200">Book Appointment</button>
+    <button onClick={() => onBook(doc)} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-black text-xs hover:bg-emerald-600 transition-all active:scale-95 shadow-lg shadow-gray-200">{t("dashboard.book_appointment")}</button>
   </div>
 );
 

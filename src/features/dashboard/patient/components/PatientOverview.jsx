@@ -2,12 +2,7 @@ import React from "react";
 import { BrainCircuit, Sparkles, Activity, Lightbulb, ClipboardCheck, PlusCircle } from "lucide-react";
 
 const PatientOverview = ({ t, userDoc, setActiveTab }) => {
-  const healthTips = [
-    "Drinking water 30 minutes before a meal can improve your metabolism.",
-    "A 15-minute walk after lunch can help regulate your blood sugar levels.",
-    "Prioritize 7-8 hours of sleep to boost your immune system naturally.",
-    "Take 5-minute eye breaks every hour to reduce digital eye strain."
-  ];
+  const healthTips = t("health_tips", { returnObjects: true });
 
   const dailyTip = healthTips[Math.floor(Math.random() * healthTips.length)];
   const firstName = userDoc?.fullName?.split(" ")[0] || "there";
@@ -35,7 +30,7 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
                 className="w-full sm:w-auto group bg-white text-emerald-900 px-7 py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-900/30 hover:shadow-2xl hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <BrainCircuit size={22} className="group-hover:rotate-12 transition-transform" />
-                Check Symptoms
+                {t("dashboard.symptom_checker")}
               </button>
               
               <button 
@@ -43,7 +38,7 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
                 className="w-full sm:w-auto group bg-emerald-500/20 backdrop-blur-md text-white border border-white/30 px-7 py-4 rounded-2xl font-black text-lg hover:bg-emerald-500/40 hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <PlusCircle size={22} className="group-hover:rotate-90 transition-transform duration-500" />
-                Book Appointment
+                {t("dashboard.book_appointment")}
               </button>
             </div>
           </div>
@@ -67,7 +62,7 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
             </div>
             <div>
               <div className="inline-block px-3 py-1 bg-amber-200/50 text-amber-800 text-[10px] font-black uppercase tracking-widest rounded-full mb-3">
-                Daily Insight
+                {t("dashboard.daily_insight")}
               </div>
               <h4 className="text-[1.375rem] font-black text-gray-900 mb-3 leading-tight">
                 {dailyTip}
@@ -75,7 +70,7 @@ const PatientOverview = ({ t, userDoc, setActiveTab }) => {
             </div>
           </div>
           <p className="text-amber-800/60 font-bold text-sm relative z-10">
-            Small habits, big changes.
+            {t("dashboard.daily_insight_desc")}
           </p>
           <Sparkles className="absolute bottom-6 right-6 text-amber-200 w-24 h-24 -rotate-12" />
         </div>

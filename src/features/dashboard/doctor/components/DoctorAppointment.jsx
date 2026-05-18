@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Calendar, Clock, User, ChevronRight, Search, Video, Building2, X, AlertCircle, Phone, MapPin } from "lucide-react";
+import { Calendar, Clock, User, ChevronRight, Search, Video, Building2, X, AlertCircle, Phone, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { db } from "../../../../firebase/config";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
@@ -14,6 +14,9 @@ const DoctorAppointment = ({ t }) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isMoreLoading, setIsMoreLoading] = useState(false);
 
   // 🧹 Final Stable Auto-Cleanup: Move overdue appointments to 'completed'
   useEffect(() => {
@@ -48,7 +51,7 @@ const DoctorAppointment = ({ t }) => {
             // Fallback for other formats (like "May 12, 2026")
             appointmentDate = new Date(appDateStr);
           }
-          
+
           appointmentDate.setHours(0, 0, 0, 0);
           return appointmentDate < todayDate;
         });
@@ -72,23 +75,22 @@ const DoctorAppointment = ({ t }) => {
     cleanupOverdue();
   }, [currentUser?.uid]);
 
-  // 📥 Fetch Real-time Appointments from Firestore
+  // 📥 Fetch Real-time Upcoming Appointments (Limited to 50 for performance)
   useEffect(() => {
     if (!currentUser) return;
 
     const q = query(
       collection(db, "appointments"),
-      where("doctorId", "==", currentUser.uid)
+      where("doctorId", "==", currentUser.uid),
+      where("status", "==", "upcoming")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log("Fetched Appointments for Doctor:", snapshot.size);
-      let apptData = snapshot.docs.map(doc => {
+      let upcomingData = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          // 🛡️ Robust Mapping
           patientName: data.patientName || "Anonymous",
           age: data.patientAge || data.age || "N/A",
           gender: data.patientGender || data.gender || "N/A",
@@ -98,20 +100,91 @@ const DoctorAppointment = ({ t }) => {
           date: data.date || data.rawDate || "No Date",
           time: data.time || "No Time",
           type: data.mode === "video" ? "Video Consult" : "Clinic Visit",
-          status: data.status || "upcoming"
+          status: "upcoming"
         };
       });
 
-      setAppointments(apptData);
+      setAppointments(prev => {
+        const historyData = prev.filter(a => a.status !== "upcoming");
+        return [...upcomingData, ...historyData];
+      });
       setIsLoading(false);
     }, (error) => {
-      console.error("Error fetching appointments:", error);
-      toast.error("Failed to load appointments");
+      console.error("Error fetching upcoming:", error);
       setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, [currentUser]);
+
+  // 📥 Function to fetch History (Completed/Cancelled) with Pagination & Sequence (Latest First)
+  const fetchHistory = async (isLoadMore = false) => {
+    if (!currentUser || (isLoadMore && !lastVisible)) return;
+    
+    setIsMoreLoading(true);
+    try {
+      const { getDocs, limit, startAfter, orderBy } = await import("firebase/firestore");
+      
+      let q = query(
+        collection(db, "appointments"),
+        where("doctorId", "==", currentUser.uid),
+        where("status", "==", activeSubTab),
+        orderBy("rawDate", "desc"), // 🚀 Latest First
+        limit(10)
+      );
+
+      if (isLoadMore && lastVisible) {
+        q = query(q, startAfter(lastVisible));
+      }
+
+      const snapshot = await getDocs(q);
+      const newHistory = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          patientName: data.patientName || "Anonymous",
+          age: data.patientAge || data.age || "N/A",
+          gender: data.patientGender || data.gender || "N/A",
+          phone: data.patientPhone || data.phone || "N/A",
+          address: data.patientAddress || data.address || "N/A",
+          symptoms: data.symptoms || "No symptoms provided",
+          date: data.date || data.rawDate || "No Date",
+          time: data.time || "No Time",
+          type: data.mode === "video" ? "Video Consult" : "Clinic Visit",
+          status: data.status
+        };
+      });
+
+      if (snapshot.docs.length > 0) {
+        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+      }
+      setHasMore(snapshot.docs.length === 10);
+
+      setAppointments(prev => {
+        const upcomingData = prev.filter(a => a.status === "upcoming");
+        const otherHistory = isLoadMore 
+          ? prev.filter(a => a.status !== "upcoming") 
+          : prev.filter(a => a.status !== "upcoming" && a.status !== activeSubTab);
+        return [...upcomingData, ...otherHistory, ...newHistory];
+      });
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error(t("patient_appointments.failed_load_history") || "Failed to load history.");
+    } finally {
+      setIsMoreLoading(false);
+    }
+  };
+
+  // 🔄 Initial History Fetch when switching tabs
+  useEffect(() => {
+    if (activeSubTab !== "upcoming") {
+      setLastVisible(null);
+      setHasMore(true);
+      fetchHistory(false);
+    }
+  }, [activeSubTab]);
 
   // 🛠️ Helper for 24h conversion (needed for sorting)
   const to24h = (timeStr) => {
@@ -154,7 +227,7 @@ const DoctorAppointment = ({ t }) => {
       const multiplier = activeSubTab === "upcoming" ? 1 : -1;
 
       if (dateDiff !== 0) return dateDiff * multiplier;
-      
+
       // Time comparison if dates are same
       return to24h(a.time).localeCompare(to24h(b.time)) * multiplier;
     });
@@ -174,19 +247,17 @@ const DoctorAppointment = ({ t }) => {
     try {
       const { doc, updateDoc, deleteField } = await import("firebase/firestore");
       const appRef = doc(db, "appointments", id);
-      
+
       const updateData = { status: newStatus };
       if (newStatus === "completed" || newStatus === "cancelled") {
         updateData.meetingRoomId = deleteField();
       }
 
       await updateDoc(appRef, updateData);
-
-      setIsDetailModalOpen(false);
-      toast.success(`Appointment marked as ${newStatus}`, { icon: '✅' });
+      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
+      toast.success(t("patient_appointments.status_updated") || `Appointment marked as ${newStatus}`, { icon: '✅' });
     } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Failed to update appointment status");
+      toast.error(t("patient_appointments.status_update_failed") || "Failed to update appointment status");
     }
   };
 
@@ -199,11 +270,11 @@ const DoctorAppointment = ({ t }) => {
         roomId = `ArogyaPath_${shortHash}_${app.id.slice(-4)}`;
         await updateDoc(doc(db, "appointments", app.id), { meetingRoomId: roomId });
       }
-      window.open(`https://meet.jit.si/${roomId}`, '_blank');
-      toast.success("Opening Video Consultation...");
+      window.open(`/video-call/${roomId}`, '_blank');
+      toast.success(t("patient_appointments.opening_video") || "Opening Video Consultation...");
     } catch (error) {
       console.error("Video Call Error:", error);
-      toast.error("Could not start video call");
+      toast.error(t("patient_appointments.video_failed") || "Could not start video call");
     }
   };
 
@@ -213,16 +284,16 @@ const DoctorAppointment = ({ t }) => {
       {/* 🔍 HEADER & FILTERS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex gap-2 p-1.5 bg-gray-100/50 rounded-2xl w-fit">
-          <button onClick={() => setActiveSubTab("upcoming")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "upcoming" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Upcoming</button>
-          <button onClick={() => setActiveSubTab("completed")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "completed" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Completed</button>
-          <button onClick={() => setActiveSubTab("cancelled")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "cancelled" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Cancelled</button>
+          <button onClick={() => setActiveSubTab("upcoming")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "upcoming" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.upcoming")}</button>
+          <button onClick={() => setActiveSubTab("completed")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "completed" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.completed")}</button>
+          <button onClick={() => setActiveSubTab("cancelled")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "cancelled" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.cancelled")}</button>
         </div>
 
         <div className="relative group min-w-[300px]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="Search patient name or ID..."
+            placeholder={t("appointments.search_placeholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all text-sm font-bold text-gray-700"
@@ -233,16 +304,16 @@ const DoctorAppointment = ({ t }) => {
       {/* 🏷️ CONSULT TYPE FILTERS */}
       <div className="flex flex-wrap gap-2 px-1">
         {[
-          { id: "All", label: "All Consults", icon: null },
-          { id: "Clinic Visit", label: "Clinic", icon: <Building2 size={12} /> },
-          { id: "Video Consult", label: "Video", icon: <Video size={12} /> }
+          { id: "All", label: t("appointments.all_consults"), icon: null },
+          { id: "Clinic Visit", label: t("appointments.clinic_visit"), icon: <Building2 size={12} /> },
+          { id: "Video Consult", label: t("appointments.video_consult"), icon: <Video size={12} /> }
         ].map((type) => (
           <button
             key={type.id}
             onClick={() => setFilterType(type.id)}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border ${filterType === type.id
-                ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100"
-                : "bg-white text-gray-400 border-gray-100 hover:border-blue-200 hover:text-gray-600"
+              ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100"
+              : "bg-white text-gray-400 border-gray-100 hover:border-blue-200 hover:text-gray-600"
               }`}
           >
             {type.icon}
@@ -256,7 +327,7 @@ const DoctorAppointment = ({ t }) => {
         {Object.keys(groupedAppointments).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-[3rem] border border-dashed border-gray-200">
             <AlertCircle size={48} className="text-gray-300 mb-4" />
-            <p className="text-gray-400 font-bold">No appointments found for this category.</p>
+            <p className="text-gray-400 font-bold">{t("appointments.no_appointments_category")}</p>
           </div>
         ) : (
           Object.entries(groupedAppointments).map(([date, apps]) => (
@@ -280,7 +351,7 @@ const DoctorAppointment = ({ t }) => {
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-3 mb-1">
                         <span className={`px-2.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${app.status === 'upcoming' ? 'bg-blue-100 text-blue-700' : app.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                          {app.status}
+                          {t(`appointments.${app.status}`)}
                         </span>
                         <span className="text-[10px] font-bold text-gray-400">{app.bookingId || app.id}</span>
                       </div>
@@ -301,7 +372,7 @@ const DoctorAppointment = ({ t }) => {
                       {app.status === 'active' ? (
                         <div className="flex items-center gap-2 text-emerald-600 animate-pulse">
                           <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                          <span className="text-[11px] font-black uppercase tracking-widest">In Progress</span>
+                          <span className="text-[11px] font-black uppercase tracking-widest">{t("appointments.in_progress")}</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-gray-400">
@@ -321,7 +392,7 @@ const DoctorAppointment = ({ t }) => {
                           className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
                         >
                           <Video size={14} />
-                          {app.meetingRoomId ? "Join Call" : "Start Call"}
+                          {app.meetingRoomId ? t("appointments.join_call") : t("appointments.start_call")}
                         </button>
                       )}
                       <button className="p-3 bg-gray-50 text-gray-400 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
@@ -334,6 +405,28 @@ const DoctorAppointment = ({ t }) => {
             </div>
           ))
         )}
+
+        {/* 📑 LOAD MORE BUTTON */}
+        {activeSubTab !== "upcoming" && hasMore && (
+          <div className="flex justify-center py-10 animate-in fade-in duration-500">
+            <button
+              onClick={() => fetchHistory(true)}
+              disabled={isMoreLoading}
+              className={`group flex items-center gap-3 px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${
+                isMoreLoading 
+                ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
+                : 'bg-white text-blue-600 border border-blue-100 hover:border-blue-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-95'
+              }`}
+            >
+              {isMoreLoading ? (
+                <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+              ) : (
+                <RefreshCw size={14} className="group-hover:rotate-180 transition-all duration-500" />
+              )}
+              {isMoreLoading ? t("appointments.loading_records") : t("appointments.load_more_history")}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 📄 DETAIL MODAL */}
@@ -345,7 +438,7 @@ const DoctorAppointment = ({ t }) => {
                 <div className="flex items-center gap-3 text-left">
                   <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-inner"><User size={24} /></div>
                   <div>
-                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Appointment Details</h3>
+                    <h3 className="text-xl font-black text-gray-900 tracking-tight">{t("appointments.details_title")}</h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{selectedAppointment.bookingId || selectedAppointment.id}</p>
                   </div>
                 </div>
@@ -355,31 +448,31 @@ const DoctorAppointment = ({ t }) => {
               <div className="space-y-4 text-left">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Patient Name</p>
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("appointments.patient_name_label")}</p>
                     <p className="text-sm font-black text-gray-900">{selectedAppointment.patientName}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Contact Number</p>
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("appointments.contact_label")}</p>
                     <p className="text-sm font-black text-blue-600">{selectedAppointment.phone}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Residential Address</p>
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("appointments.address_label")}</p>
                     <p className="text-sm font-black text-gray-900 flex items-center gap-2">
                       <MapPin size={12} className="text-red-500" />
                       {selectedAppointment.address}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Schedule</p>
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{t("appointments.schedule_label")}</p>
                     <p className="text-sm font-black text-gray-900">{selectedAppointment.date}, {selectedAppointment.time}</p>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Reported Symptoms / Reason</p>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("appointments.symptoms_label")}</p>
                   <div className="p-3 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 italic">
                     "{selectedAppointment.symptoms}"
                   </div>
@@ -390,8 +483,8 @@ const DoctorAppointment = ({ t }) => {
                     {selectedAppointment.type === 'Video Consult' ? <Video size={18} /> : <Building2 size={18} />}
                   </div>
                   <div>
-                    <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest leading-none mb-0.5">Consultation Mode</p>
-                    <p className="text-sm font-black text-blue-800">{selectedAppointment.type}</p>
+                    <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest leading-none mb-0.5">{t("appointments.mode_label")}</p>
+                    <p className="text-sm font-black text-blue-800">{selectedAppointment.type === 'Video Consult' ? t("appointments.video_consult") : t("appointments.clinic_visit")}</p>
                   </div>
                 </div>
               </div>
@@ -402,11 +495,11 @@ const DoctorAppointment = ({ t }) => {
                     onClick={() => handleAction(selectedAppointment.id, 'completed')}
                     className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 active:scale-95 transition-all"
                   >
-                    Mark as Completed
+                    {t("appointments.mark_as_completed")}
                   </button>
                 )}
                 {(selectedAppointment.status === 'completed' || selectedAppointment.status === 'cancelled') && (
-                  <button onClick={() => setIsDetailModalOpen(false)} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest">Close Record</button>
+                  <button onClick={() => setIsDetailModalOpen(false)} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest">{t("appointments.close_record")}</button>
                 )}
               </div>
             </div>

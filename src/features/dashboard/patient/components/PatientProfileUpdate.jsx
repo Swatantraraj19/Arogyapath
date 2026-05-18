@@ -78,7 +78,7 @@ const PatientProfileUpdate = ({ existingData }) => {
         setPreview(URL.createObjectURL(compressed));
         if (errors.photo) setErrors({ ...errors, photo: null });
       } catch (err) {
-        toast.error("Failed to process image");
+        toast.error(t("profile_setup.failed_image") || "Failed to process image");
       } finally {
         setLoading(false);
       }
@@ -131,7 +131,7 @@ const PatientProfileUpdate = ({ existingData }) => {
       setLoading(true);
       let photoUrl = preview;
       if (image) {
-        toast.loading("Uploading photo...", { id: "uploading" });
+        toast.loading(t("profile_setup.uploading_photo") || "Uploading photo...", { id: "uploading" });
         photoUrl = await uploadImageToCloudinary(image);
         toast.dismiss("uploading");
       }
@@ -203,7 +203,7 @@ const PatientProfileUpdate = ({ existingData }) => {
 
           <div className="text-center md:text-left space-y-2">
             <h3 className="text-3xl font-black leading-tight text-emerald-600">
-              Edit Your Profile
+              {t("profile_setup.edit_profile")}
             </h3>
             <p className="text-gray-400 font-medium italic">{t("profile_setup.subtitle")}</p>
           </div>
@@ -270,7 +270,7 @@ const PatientProfileUpdate = ({ existingData }) => {
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">{t("profile_setup.gender")}</label>
             <select name="gender" value={formData.gender} onChange={handleInputChange} className={`input-standard ${errors.gender ? 'border-red-500' : ''}`}>
-              <option value="">Select</option>
+              <option value="">{t("profile_setup.select")}</option>
               <option value="male">{t("profile_setup.gender_male")}</option>
               <option value="female">{t("profile_setup.gender_female")}</option>
               <option value="other">{t("profile_setup.gender_other")}</option>
@@ -283,7 +283,7 @@ const PatientProfileUpdate = ({ existingData }) => {
               <Activity size={16} className="text-gray-400" /> {t("profile_setup.blood_group")}
             </label>
             <select name="bloodGroup" value={formData.bloodGroup} onChange={handleInputChange} className={`input-standard ${errors.bloodGroup ? 'border-red-500' : ''}`}>
-              <option value="">Select</option>
+              <option value="">{t("profile_setup.select")}</option>
               {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => <option key={bg} value={bg}>{bg}</option>)}
               <option value="unknown">{t("profile_setup.blood_group_unknown")}</option>
             </select>

@@ -83,7 +83,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
         setPreview(URL.createObjectURL(compressed));
         if (errors.photo) setErrors({ ...errors, photo: null });
       } catch (err) {
-        toast.error("Failed to process image");
+        toast.error(t("profile_setup.failed_image"));
       } finally {
         setLoading(false);
       }
@@ -150,7 +150,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
       setLoading(true);
       let photoUrl = preview;
       if (image) {
-        toast.loading("Uploading photo...", { id: "uploading" });
+        toast.loading(t("profile_setup.uploading_photo"), { id: "uploading" });
         photoUrl = await uploadImageToCloudinary(image);
         toast.dismiss("uploading");
       }
@@ -224,7 +224,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
 
           <div className="text-center md:text-left space-y-2">
             <h3 className="text-3xl font-black leading-tight text-blue-600">
-              Edit Your Profile
+              {t("profile_setup.edit_profile")}
             </h3>
             <p className="text-gray-400 font-medium italic">{t("profile_setup.subtitle")}</p>
           </div>

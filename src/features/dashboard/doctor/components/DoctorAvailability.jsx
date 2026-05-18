@@ -6,7 +6,7 @@ import { db } from "../../../../firebase/config";
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 
 // 🕒 Premium 12-Hour Time Picker Component (Instant)
-const TimePickerInput = React.memo(({ value, onChange }) => {
+const TimePickerInput = React.memo(({ value, onChange, t }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -53,19 +53,19 @@ const TimePickerInput = React.memo(({ value, onChange }) => {
       {isOpen && (
         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-[150] bg-white border border-gray-100 rounded-[2rem] shadow-2xl p-4 flex gap-4 animate-in fade-in zoom-in-95 duration-200">
           <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 scrollbar-hide">
-            <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">Hour</span>
+            <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">{t ? t("doctor_availability.hour") : "Hour"}</span>
             {hours.map(h => (
               <button key={h} onClick={() => handleSelect(h, currM, isPM ? 'PM' : 'AM')} className={`px-3 py-2 rounded-xl text-[10px] font-black ${dispH === h ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'hover:bg-gray-50 text-gray-500'}`}>{h}</button>
             ))}
           </div>
           <div className="flex flex-col gap-1 pr-1">
-            <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">Min</span>
+            <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">{t ? t("doctor_availability.min") : "Min"}</span>
             {minutes.map(m => (
               <button key={m} onClick={() => handleSelect(dispH, m, isPM ? 'PM' : 'AM')} className={`px-3 py-2 rounded-xl text-[10px] font-black ${currM === m ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'hover:bg-gray-50 text-gray-500'}`}>{m}</button>
             ))}
           </div>
           <div className="flex flex-col gap-1 border-l border-gray-100 pl-3">
-            <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">Day</span>
+            <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">{t ? t("doctor_availability.day") : "Day"}</span>
             <button onClick={() => handleSelect(dispH, currM, 'AM')} className={`px-3 py-2 rounded-xl text-[10px] font-black ${!isPM ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' : 'hover:bg-gray-50 text-gray-500'}`}>AM</button>
             <button onClick={() => handleSelect(dispH, currM, 'PM')} className={`px-3 py-2 rounded-xl text-[10px] font-black ${isPM ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' : 'hover:bg-gray-50 text-gray-500'}`}>PM</button>
           </div>
@@ -110,7 +110,7 @@ const DoctorAvailability = ({ t }) => {
         }
       } catch (error) {
         console.error("Error fetching availability:", error);
-        toast.error("Failed to load your schedule");
+        toast.error(t("doctor_availability.load_failed") || "Failed to load your schedule");
       } finally {
         setIsLoading(false);
       }
@@ -218,11 +218,11 @@ const DoctorAvailability = ({ t }) => {
     }));
   };
 
-  const addHoliday = async () => {
-    if (!newHoliday) return toast.error("Please select a date");
-    if (blockedDates.includes(newHoliday)) return toast.error("Date already blocked");
+  const handleAddHoliday = async () => {
+    if (!newHoliday) return toast.error(t("doctor_availability.select_date") || "Please select a date");
+    if (blockedDates.includes(newHoliday)) return toast.error(t("doctor_availability.date_blocked") || "Date already blocked");
     
-    const updatedBlocked = [...blockedDates, newHoliday].sort();
+    const newDates = [...blockedDates, newHoliday].sort();
     
     // 🛡️ Pre-save conflict check
     const q = query(
@@ -246,37 +246,37 @@ const DoctorAvailability = ({ t }) => {
 
     try {
       const docRef = doc(db, "availability", currentUser.uid);
-      await setDoc(docRef, { blockedDates: updatedBlocked }, { merge: true });
-      setBlockedDates(updatedBlocked);
+      await setDoc(docRef, { blockedDates: newDates }, { merge: true });
+      setBlockedDates(newDates);
       setNewHoliday("");
-      toast.success("Holiday saved successfully!", { icon: '🏖️' });
+      toast.success(t("doctor_availability.holiday_saved") || "Holiday saved successfully!", { icon: '🏖️' });
     } catch (error) {
-      toast.error("Failed to save holiday");
+      toast.error(t("doctor_availability.holiday_failed") || "Failed to save holiday");
     }
   };
 
   const removeHoliday = async (date) => {
-    const updatedBlocked = blockedDates.filter(d => d !== date);
+    const newDates = blockedDates.filter(d => d !== date);
     try {
       const docRef = doc(db, "availability", currentUser.uid);
-      await setDoc(docRef, { blockedDates: updatedBlocked }, { merge: true });
-      setBlockedDates(updatedBlocked);
-      toast.success("Date unblocked and saved!");
+      await setDoc(docRef, { blockedDates: newDates }, { merge: true });
+      setBlockedDates(newDates);
+      toast.success(t("doctor_availability.date_unblocked") || "Date unblocked and saved!");
     } catch (error) {
-      toast.error("Failed to update schedule");
+      toast.error(t("doctor_availability.update_failed") || "Failed to update schedule");
     }
   };
 
   const applySmartAll = () => {
     const sourceDay = weeklySchedule.find(d => d.slots.length > 0);
-    if (!sourceDay) return toast.error("Please add slots to at least one day first");
+    if (!sourceDay) return toast.error(t("doctor_availability.add_slot_first") || "Please add slots to at least one day first");
 
-    setWeeklySchedule(prev => prev.map((item) => ({
-      ...item,
-      slots: JSON.parse(JSON.stringify(sourceDay.slots))
+    setWeeklySchedule(prev => prev.map(day => ({
+      ...day,
+      slots: [...sourceDay.slots]
     })));
 
-    toast.success(`Applied ${sourceDay.day}'s schedule to all days!`);
+    toast.success(t("doctor_availability.applied_to_all") || `Applied ${sourceDay.day}'s schedule to all days!`);
   };
 
   const [conflicts, setConflicts] = useState([]);
@@ -348,22 +348,17 @@ const DoctorAvailability = ({ t }) => {
   };
 
   const handleSave = async (force = false) => {
-    if (!currentUser) return toast.error("Please login first");
+    if (!currentUser) return toast.error(t("doctor_availability.login_first") || "Please login first");
     
     // 🛡️ Validate NO Overlapping Slots in the schedule itself
     for (const day of weeklySchedule) {
-      const slots = day.slots;
-      for (let i = 0; i < slots.length; i++) {
-        for (let j = i + 1; j < slots.length; j++) {
-          const s1 = slots[i];
-          const s2 = slots[j];
-          // Overlap condition: (StartA < EndB) AND (EndA > StartB)
-          if (s1.start < s2.end && s1.end > s2.start) {
-            return toast.error(`Overlapping slots detected on ${day.day}! Please fix them before saving.`, {
-              icon: '❌',
-              duration: 4000
-            });
-          }
+      const sorted = [...day.slots].sort((a, b) => a.start.localeCompare(b.start));
+      for (let i = 0; i < sorted.length - 1; i++) {
+        if (sorted[i].end > sorted[i + 1].start) {
+          return toast.error(t("doctor_availability.overlap_error") || `Overlapping slots detected on ${day.day}! Please fix them before saving.`, {
+            icon: '⚠️',
+            duration: 4000
+          });
         }
       }
     }
@@ -390,14 +385,14 @@ const DoctorAvailability = ({ t }) => {
         doctorId: currentUser.uid
       }, { merge: true });
 
-      toast.success("Availability updated successfully!", {
+      toast.success(t("doctor_availability.availability_updated") || "Availability updated successfully!", {
         icon: '✅',
-        style: { borderRadius: '15px', background: '#333', color: '#fff' }
+        duration: 3000
       });
       setShowWarning(false);
     } catch (error) {
       console.error("Error saving availability:", error);
-      toast.error("Failed to save schedule. Try again.");
+      toast.error(t("doctor_availability.save_failed") || "Failed to save schedule. Try again.");
     } finally {
       setIsSaving(false);
     }
@@ -422,9 +417,9 @@ const DoctorAvailability = ({ t }) => {
             <div className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-200">
               <Calendar size={24} />
             </div>
-            Availability Manager
+            {t("doctor_availability.title")}
           </h2>
-          <p className="text-gray-400 font-bold text-sm ml-12">Set your consultation hours and manage your time slots.</p>
+          <p className="text-gray-400 font-bold text-sm ml-12">{t("doctor_availability.subtitle")}</p>
         </div>
 
         <button
@@ -433,7 +428,7 @@ const DoctorAvailability = ({ t }) => {
           className={`flex items-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600 hover:shadow-blue-200'}`}
         >
           {isSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Save size={18} />}
-          {isSaving ? "Saving..." : "Save Schedule"}
+          {isSaving ? t("doctor_availability.saving") : t("doctor_availability.save_schedule")}
         </button>
       </div>
 
@@ -442,13 +437,13 @@ const DoctorAvailability = ({ t }) => {
         {/* 🗓️ WEEKLY SCHEDULE LIST */}
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-4 mb-2">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Weekly Timeline</h3>
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">{t("doctor_availability.weekly_timeline")}</h3>
             <button
               onClick={applySmartAll}
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-[10px] font-black uppercase tracking-widest transition-colors"
             >
               <Copy size={14} />
-              Apply Schedule to All
+              {t("doctor_availability.apply_all")}
             </button>
           </div>
 
@@ -472,13 +467,13 @@ const DoctorAvailability = ({ t }) => {
                       </div>
                       <div className="text-left flex-1 min-w-[140px]">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-lg font-black text-gray-900 leading-none">{dateInfo.dayName}</p>
+                          <p className="text-lg font-black text-gray-900 leading-none">{t(`days.${dateInfo.dayName}`) || dateInfo.dayName}</p>
                           {dateInfo.isToday && (
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase tracking-widest rounded-md animate-pulse">Today</span>
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase tracking-widest rounded-md animate-pulse">{t("doctor_availability.today")}</span>
                           )}
                         </div>
                         <p className={`text-[10px] font-black uppercase tracking-widest ${isBlocked ? 'text-amber-500' : isActive ? 'text-blue-500' : 'text-gray-400'}`}>
-                          {dateInfo.dateStr} • {isBlocked ? "On Leave" : isActive ? "Available" : "Not Set"}
+                          {dateInfo.dateStr} • {isBlocked ? t("doctor_availability.on_leave") : isActive ? t("doctor_availability.available") : t("doctor_availability.not_set")}
                         </p>
                       </div>
                       {!isBlocked && (
@@ -486,7 +481,7 @@ const DoctorAvailability = ({ t }) => {
                           onClick={() => addSlot(dayIndex)}
                           className="flex items-center gap-2 px-2 py-1 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest shadow-sm"
                         >
-                          <Plus size={14} /> Add Slot
+                          <Plus size={14} /> {t("doctor_availability.add_slot")}
                         </button>
                       )}
                     </div>
@@ -501,11 +496,13 @@ const DoctorAvailability = ({ t }) => {
                               <TimePickerInput 
                                 value={slot.start} 
                                 onChange={(val) => handleTimeChange(dayIndex, sIdx, 'start', val)} 
+                                t={t}
                               />
-                              <span className="text-gray-300 font-black text-[9px] uppercase tracking-tighter">to</span>
+                              <span className="text-gray-300 font-black text-[9px] uppercase tracking-tighter">{t("doctor_availability.to")}</span>
                               <TimePickerInput 
                                 value={slot.end} 
                                 onChange={(val) => handleTimeChange(dayIndex, sIdx, 'end', val)} 
+                                t={t}
                               />
                             </div>
                             {/* Separate Trash Button */}
@@ -524,7 +521,7 @@ const DoctorAvailability = ({ t }) => {
                     {isBlocked && (
                       <div className="flex-1 flex items-center gap-2 text-amber-600 italic">
                         <AlertCircle size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Holiday Mode</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{t("doctor_availability.holiday_mode")}</span>
                       </div>
                     )}
                   </div>
@@ -540,32 +537,32 @@ const DoctorAvailability = ({ t }) => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-all duration-700"></div>
 
             <div className="space-y-2">
-              <h4 className="text-lg font-black tracking-tight">Slot Settings</h4>
-              <p className="text-gray-400 text-xs font-bold leading-relaxed">Adjust how much time you spend with each patient.</p>
+              <h4 className="text-lg font-black tracking-tight">{t("doctor_availability.slot_settings_title")}</h4>
+              <p className="text-gray-400 text-xs font-bold leading-relaxed">{t("doctor_availability.slot_settings_desc")}</p>
             </div>
 
             <div className="space-y-4">
               <label className="block">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Duration (Minutes)</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">{t("doctor_availability.duration")}</span>
                 <select
                   value={slotDuration}
                   onChange={(e) => setSlotDuration(Number(e.target.value))}
                   className="w-full mt-2 bg-white/10 border border-white/10 rounded-2xl px-4 py-4 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
                 >
-                  <option value={15} className="bg-gray-900">15 Minutes</option>
-                  <option value={30} className="bg-gray-900">30 Minutes</option>
-                  <option value={45} className="bg-gray-900">45 Minutes</option>
-                  <option value={60} className="bg-gray-900">1 Hour</option>
+                  <option value={15} className="bg-gray-900">{t("doctor_availability.15_min")}</option>
+                  <option value={30} className="bg-gray-900">{t("doctor_availability.30_min")}</option>
+                  <option value={45} className="bg-gray-900">{t("doctor_availability.45_min")}</option>
+                  <option value={60} className="bg-gray-900">{t("doctor_availability.1_hour")}</option>
                 </select>
               </label>
 
               <div className="p-5 bg-white/5 border border-white/5 rounded-[2rem] space-y-3">
                 <div className="flex items-center gap-3 text-emerald-400">
                   <CheckCircle2 size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Auto-Generation ON</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t("doctor_availability.auto_gen_on")}</span>
                 </div>
                 <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
-                  Our AI will automatically create slots based on your duration and working hours.
+                  {t("doctor_availability.auto_gen_desc")}
                 </p>
               </div>
             </div>
@@ -577,8 +574,8 @@ const DoctorAvailability = ({ t }) => {
                 <AlertCircle size={24} />
               </div>
               <div className="space-y-0.5 text-left">
-                <h4 className="text-lg font-black text-gray-900 leading-none">Vacation Mode</h4>
-                <p className="text-[10px] text-gray-400 font-bold tracking-tight">Block all bookings for a date.</p>
+                <h4 className="text-lg font-black text-gray-900 leading-none">{t("doctor_availability.vacation_title")}</h4>
+                <p className="text-[10px] text-gray-400 font-bold tracking-tight">{t("doctor_availability.vacation_desc")}</p>
               </div>
             </div>
 
@@ -600,13 +597,13 @@ const DoctorAvailability = ({ t }) => {
                 onClick={addHoliday}
                 className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 shadow-lg shadow-amber-100 active:scale-95 transition-all"
               >
-                Block Date
+                {t("doctor_availability.block_date")}
               </button>
             </div>
 
             {blockedDates.length > 0 && (
               <div className="pt-4 space-y-2">
-                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Planned Holidays</p>
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("doctor_availability.planned_holidays")}</p>
                 <div className="max-h-[150px] overflow-y-auto space-y-2 pr-1">
                   {blockedDates.map(date => (
                     <div key={date} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -630,9 +627,9 @@ const DoctorAvailability = ({ t }) => {
                 <AlertCircle size={44} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black text-gray-900 leading-tight">Booking Conflict!</h3>
+                <h3 className="text-3xl font-black text-gray-900 leading-tight">{t("doctor_availability.conflict_title")}</h3>
                 <p className="text-gray-500 font-bold text-sm">
-                  You have active appointments during the times you're trying to block. You must resolve these conflicts before saving your new schedule.
+                  {t("doctor_availability.conflict_desc")}
                 </p>
               </div>
             </div>
@@ -660,7 +657,7 @@ const DoctorAvailability = ({ t }) => {
                   <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-100">
                     <AlertCircle size={12} className="text-amber-500" />
                     <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider">
-                      Reason: {app.reason}
+                      {t("doctor_availability.reason")} {app.reason}
                     </span>
                   </div>
                 </div>
@@ -672,7 +669,7 @@ const DoctorAvailability = ({ t }) => {
                 onClick={() => setShowWarning(false)}
                 className="w-full py-5 bg-gray-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 shadow-xl shadow-gray-200 transition-all active:scale-95"
               >
-                I'll Review & Fix Conflicts
+                {t("doctor_availability.review_conflicts")}
               </button>
             </div>
           </div>

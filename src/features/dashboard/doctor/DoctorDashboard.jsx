@@ -65,7 +65,7 @@ const DoctorDashboard = () => {
           localStorage.setItem("roleVerified", previousRole);
           document.body.setAttribute("data-role", previousRole);
         }
-        toast.error("Failed to sync role with cloud. Reverting...");
+        toast.error(t("doctor_dashboard.sync_failed"));
       }
     } else {
       toast(t("dashboard.switch_to_patient") + "...", { icon: "🔄" });
@@ -79,10 +79,10 @@ const DoctorDashboard = () => {
       sessionStorage.clear();
       localStorage.clear();
       document.body.removeAttribute("data-role");
-      toast.success("Safe travels, Doctor!");
+      toast.success(t("doctor_dashboard.logout_success"));
       navigate("/", { replace: true });
     } catch (error) {
-      toast.error("Logout failed");
+      toast.error(t("doctor_dashboard.logout_failed"));
     }
   };
 
@@ -94,8 +94,8 @@ const DoctorDashboard = () => {
 
   const navItems = [
     { id: "overview", icon: <LayoutDashboard size={20} />, label: t("dashboard.overview") },
-    { id: "appointments", icon: <Clock size={20} />, label: "Appointments" },
-    { id: "availability", icon: <Calendar size={20} />, label: "Availability Manager" },
+    { id: "appointments", icon: <Clock size={20} />, label: t("dashboard.appointments") },
+    { id: "availability", icon: <Calendar size={20} />, label: t("dashboard.availability") },
     { id: "profile", icon: <UserCircle size={20} />, label: t("dashboard.profile") },
     { id: "switch", icon: <RefreshCw size={20} />, label: t("dashboard.switch_to_patient"), action: handleRoleSwitch, special: true, hoverColor: "emerald" },
     { id: "logout", icon: <LogOut size={20} />, label: t("dashboard.sign_out"), action: handleLogout, danger: true },
@@ -118,7 +118,7 @@ const DoctorDashboard = () => {
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       userDoc={profileData || userDoc}
-      roleTitle="DOCTOR ACCOUNT"
+      roleTitle={t("dashboard.doctor_account")}
       roleColor="blue"
       welcomeName={`Dr. ${(profileData?.fullName || userDoc?.fullName || "Consultant").split(" ")[0]}`}
     >

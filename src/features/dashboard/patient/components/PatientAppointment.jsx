@@ -54,10 +54,15 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   const [doctors, setDoctors] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [doctorSlots, setDoctorSlots] = useState([]);
+  
+  // 📑 Pagination States
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isMoreLoading, setIsMoreLoading] = useState(false);
 
   const recognitionRef = useRef(null);
 
-  // 📥 Fetch Doctors from Firestore
+  // 📥 Fetch Doctors from Firestore (Restored Original Logic)
   useEffect(() => {
     const q = query(collection(db, "doctors"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -67,19 +72,77 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
     return () => unsubscribe();
   }, []);
 
-  // 📥 Fetch Patient's Bookings
+  // 📥 Fetch Patient's Real-time Upcoming Bookings
   useEffect(() => {
     if (!currentUser) return;
     const q = query(
       collection(db, "appointments"),
-      where("patientId", "==", currentUser.uid)
+      where("patientId", "==", currentUser.uid),
+      where("status", "==", "upcoming")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMyBookings(bookings);
+      const upcomingData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMyBookings(prev => {
+        const historyData = prev.filter(b => b.status !== "upcoming");
+        return [...upcomingData, ...historyData];
+      });
+    }, (error) => {
+      console.error("Error fetching upcoming bookings:", error);
     });
     return () => unsubscribe();
   }, [currentUser]);
+
+  // 📥 Fetch History with Pagination
+  const fetchHistory = useCallback(async (isLoadMore = false) => {
+    if (!currentUser || (isLoadMore && !lastVisible)) return;
+
+    setIsMoreLoading(true);
+    try {
+      const { getDocs, limit, startAfter, orderBy } = await import("firebase/firestore");
+      
+      let q = query(
+        collection(db, "appointments"),
+        where("patientId", "==", currentUser.uid),
+        where("status", "==", bookingStatusTab),
+        orderBy("rawDate", "desc"),
+        limit(10)
+      );
+
+      if (isLoadMore && lastVisible) {
+        q = query(q, startAfter(lastVisible));
+      }
+
+      const snapshot = await getDocs(q);
+      const newHistory = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      if (snapshot.docs.length > 0) {
+        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+      }
+      setHasMore(snapshot.docs.length === 10);
+
+      setMyBookings(prev => {
+        const upcomingData = prev.filter(b => b.status === "upcoming");
+        const otherHistory = isLoadMore 
+          ? prev.filter(b => b.status !== "upcoming") 
+          : prev.filter(b => b.status !== "upcoming" && b.status !== bookingStatusTab);
+        return [...upcomingData, ...otherHistory, ...newHistory];
+      });
+    } catch (error) {
+      console.error("Error fetching patient history:", error);
+      toast.error(t("patient_appointments.failed_load_history"));
+    } finally {
+      setIsMoreLoading(false);
+    }
+  }, [currentUser, bookingStatusTab, lastVisible]);
+
+  // 🔄 Trigger fetch when tab changes
+  useEffect(() => {
+    if (bookingStatusTab !== "upcoming" && activeSubTab === "my") {
+      setLastVisible(null);
+      setHasMore(true);
+      fetchHistory(false);
+    }
+  }, [bookingStatusTab, activeSubTab]);
 
   // 🔄 SMART DEBOUNCE LOGIC
   useEffect(() => {
@@ -126,7 +189,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   }, []);
 
   const toggleListening = useCallback(() => {
-    if (!recognitionRef.current) return toast.error("Not supported");
+    if (!recognitionRef.current) return toast.error(t("symptom_checker.not_supported"));
     if (isListening) {
       recognitionRef.current.stop();
     } else {
@@ -261,8 +324,8 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   }, [selectedDate, selectedDoctor?.availability, bookedSlots, generateSlotsForDate]);
 
   const confirmBooking = async () => {
-    if (!currentUser) return toast.error("Please login first");
-    if (!selectedSlot) return toast.error("Please select a time slot");
+    if (!currentUser) return toast.error(t("auth.session_not_found"));
+    if (!selectedSlot) return toast.error(t("patient_appointments.select_time_slot"));
     setIsProcessing(true);
     try {
       const lockId = `${selectedDoctor.id}_${selectedDate}_${selectedSlot.replace(/\s+/g, '')}`;
@@ -316,10 +379,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       });
       setCurrentBookingId(generatedId);
       setBookingStep(2);
-      toast.success("Appointment Confirmed!");
+      toast.success(t("patient_appointments.appointment_confirmed"));
     } catch (error) {
       console.error("Booking Transaction Error:", error);
-      toast.error(error.message || "Failed to book appointment. Please try again.", { icon: '🚫' });
+      toast.error(error.message || t("patient_appointments.failed_book"), { icon: '🚫' });
     } finally {
       setIsProcessing(false);
     }
@@ -342,7 +405,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   }, [doctors]);
 
   const handleCancelAppointment = useCallback(async (appId) => {
-    if (window.confirm("Are you sure?")) {
+    if (window.confirm(t("patient_appointments.are_you_sure"))) {
       try {
         const { deleteDoc, getDoc } = await import("firebase/firestore");
         const appRef = doc(db, "appointments", appId);
@@ -356,16 +419,16 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         }
 
         await setDoc(appRef, { status: 'cancelled' }, { merge: true });
-        toast.success("Appointment Cancelled Successfully");
+        toast.success(t("patient_appointments.appointment_cancelled"));
       } catch (error) {
         console.error("Cancellation Error:", error);
-        toast.error("Failed to cancel appointment");
+        toast.error(t("patient_appointments.failed_cancel"));
       }
     }
   }, []);
 
   const submitRating = useCallback(async () => {
-    if (ratingValue === 0) return toast.error("Please select stars");
+    if (ratingValue === 0) return toast.error(t("patient_appointments.select_stars"));
     try {
       const { doc, runTransaction } = await import("firebase/firestore");
       
@@ -401,10 +464,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       });
 
       setIsRatingModalOpen(false);
-      toast.success("Thank you for your feedback!", { icon: '⭐' });
+      toast.success(t("patient_appointments.feedback_success"), { icon: '⭐' });
     } catch (error) {
       console.error("Rating Error:", error);
-      toast.error("Failed to submit rating");
+      toast.error(t("patient_appointments.failed_submit_rating"));
     }
   }, [ratingValue, ratingAppointmentId]);
 
@@ -511,10 +574,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
     <div className="space-y-8 animate-in slide-in-from-right-8 duration-700 pb-20">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div className="space-y-1 text-left">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight text-left">Appointments</h2>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight text-left">{t("dashboard.appointments")}</h2>
           <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl w-fit">
-            <button onClick={() => setActiveSubTab("find")} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeSubTab === 'find' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Find Doctors</button>
-            <button onClick={() => setActiveSubTab("my")} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeSubTab === 'my' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>My Bookings</button>
+            <button onClick={() => setActiveSubTab("find")} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeSubTab === 'find' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("patient_appointments.find_doctors")}</button>
+            <button onClick={() => setActiveSubTab("my")} className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeSubTab === 'my' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("patient_appointments.my_bookings")}</button>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-1 max-w-md">
@@ -522,7 +585,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
             <input
               type="text"
-              placeholder={activeSubTab === 'find' ? "Search doctor or specialty..." : "Search by doctor or Booking ID..."}
+              placeholder={activeSubTab === 'find' ? t("patient_appointments.search_doctor") : t("patient_appointments.search_booking")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-12 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 outline-none transition-all font-bold text-sm"
@@ -547,7 +610,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
                   : "bg-white text-gray-400 border border-gray-100 hover:border-emerald-200 hover:text-gray-600"
               }`}
             >
-              {tab}
+              {t("patient_appointments." + tab)}
             </button>
           ))}
         </div>
@@ -557,10 +620,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         !externalCity ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 bg-white rounded-[40px] border-2 border-dashed border-gray-100 animate-in fade-in zoom-in duration-500 text-center col-span-full">
             <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-6 animate-pulse"><MapPin size={40} /></div>
-            <h3 className="text-2xl font-black text-gray-900 mb-2">Location Required</h3>
-            <p className="text-gray-500 font-bold max-w-sm mb-8 mx-auto">Please select your city to discover the best doctors and specialists near you.</p>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">{t("patient_appointments.location_required")}</h3>
+            <p className="text-gray-500 font-bold max-w-sm mb-8 mx-auto">{t("patient_appointments.location_desc")}</p>
             <button onClick={onDetectLocation} disabled={isLocating} className={`flex items-center gap-2 px-6 py-3 ${isLocating ? 'bg-gray-100 text-gray-400' : 'bg-red-600 text-white shadow-xl shadow-red-900/10'} rounded-2xl font-black text-sm transition-all`}>
-              {isLocating ? <><RefreshCw size={16} className="animate-spin" /> Locating...</> : <><MapPin size={16} /> Detect Location</>}
+              {isLocating ? <><RefreshCw size={16} className="animate-spin" /> {t("patient_appointments.locating")}</> : <><MapPin size={16} /> {t("patient_appointments.detect_location")}</>}
             </button>
           </div>
         ) : (
@@ -573,11 +636,33 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
           {filteredBookings.length === 0 ? (
             <div className="col-span-full py-20 text-center space-y-4">
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300"><Calendar size={32} /></div>
-              <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">No Bookings Found</p>
+              <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t("patient_appointments.no_bookings_found")}</p>
             </div>
           ) : filteredBookings.map(app => (
-            <MyBookingCard key={app.id} app={app} onClick={handleViewBooking} onCancel={handleCancelAppointment} onRate={(id) => { setRatingAppointmentId(id); setRatingValue(0); setIsRatingModalOpen(true); }} />
+            <MyBookingCard key={app.id} app={app} onClick={handleViewBooking} onCancel={handleCancelAppointment} onRate={(id) => { setRatingAppointmentId(id); setRatingValue(0); setIsRatingModalOpen(true); }} t={t} />
           ))}
+        </div>
+      )}
+
+      {/* 📑 LOAD MORE BUTTON FOR PATIENTS */}
+      {activeSubTab === "my" && bookingStatusTab !== "upcoming" && hasMore && (
+        <div className="flex justify-center py-10 animate-in fade-in duration-500">
+          <button
+            onClick={() => fetchHistory(true)}
+            disabled={isMoreLoading}
+            className={`group flex items-center gap-3 px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${
+              isMoreLoading 
+              ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
+              : 'bg-white text-emerald-600 border border-emerald-100 hover:border-emerald-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-95'
+            }`}
+          >
+            {isMoreLoading ? (
+              <div className="w-4 h-4 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin"></div>
+            ) : (
+              <RefreshCw size={14} className="group-hover:rotate-180 transition-all duration-500" />
+            )}
+            {isMoreLoading ? t("patient_appointments.loading_history") : t("patient_appointments.load_more")}
+          </button>
         </div>
       )}
 
@@ -590,6 +675,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         hoverRating={hoverRating}
         setHoverRating={setHoverRating}
         onSubmit={submitRating}
+        t={t}
       />
 
       <BookingModal
@@ -608,6 +694,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         isProcessing={isProcessing}
         confirmBooking={confirmBooking}
         currentBookingId={currentBookingId}
+        t={t}
       />
     </div>
   );

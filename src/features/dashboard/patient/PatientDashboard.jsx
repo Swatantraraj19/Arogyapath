@@ -73,7 +73,7 @@ const PatientDashboard = () => {
       }
     } catch (error) {
       console.error("Switch failed:", error);
-      toast.error("Failed to switch role");
+      toast.error(t("dashboard.switch_failed"));
     }
   };
 
@@ -106,7 +106,7 @@ const PatientDashboard = () => {
       activeTab={activeTab}
       setActiveTab={handleTabChange}
       userDoc={displayData}
-      roleTitle="PATIENT ACCOUNT"
+      roleTitle={t("dashboard.patient_account")}
       roleColor="emerald"
       welcomeName={(displayData?.fullName || "there").split(" ")[0]}
     >
