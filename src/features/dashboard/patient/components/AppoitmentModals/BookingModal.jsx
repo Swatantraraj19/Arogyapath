@@ -9,10 +9,10 @@ const BookingModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden animate-in zoom-in-95 max-h-[90vh] overflow-y-auto scrollbar-hide">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white w-full max-w-lg rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden animate-in sm:zoom-in-95 slide-in-from-bottom-full sm:slide-in-from-bottom-0 max-h-[90vh] overflow-y-auto scrollbar-hide">
         {bookingStep === 1 ? (
-          <div className="space-y-6 text-left">
+          <div className="space-y-5 text-left">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black text-gray-900">{t("patient_appointments.confirm_appointment")}</h3>
               <button onClick={onClose} className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500">

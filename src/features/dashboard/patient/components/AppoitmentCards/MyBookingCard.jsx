@@ -4,19 +4,19 @@ import { Video, Building2, CheckCircle2 } from "lucide-react";
 const MyBookingCard = ({ app, onClick, onCancel, onRate, t }) => (
   <div
     onClick={() => onClick(app)}
-    className={`bg-white p-5 rounded-3xl border border-gray-100 flex items-center justify-between gap-4 hover:shadow-xl hover:-translate-y-1 cursor-pointer transition-all ${app.status === 'cancelled' ? 'opacity-60' : ''}`}
+    className={`bg-white p-4 sm:p-5 rounded-3xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-xl hover:-translate-y-1 cursor-pointer transition-all ${app.status === 'cancelled' ? 'opacity-60' : ''}`}
   >
     <div className="flex items-center gap-4">
-      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${app.status === 'completed' ? 'bg-gray-50 border-gray-100 text-gray-400' : app.status === 'cancelled' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
-        {app.mode === 'video' ? <Video size={24} /> : <Building2 size={24} />}
+      <div className={`w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl flex items-center justify-center border ${app.status === 'completed' ? 'bg-gray-50 border-gray-100 text-gray-400' : app.status === 'cancelled' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
+        {app.mode === 'video' ? <Video size={20} className="sm:w-6 sm:h-6" /> : <Building2 size={20} className="sm:w-6 sm:h-6" />}
       </div>
-      <div className="text-left">
+      <div className="text-left flex-1">
         <h5 className={`font-black text-gray-900 leading-tight ${app.status === 'cancelled' ? 'opacity-50' : ''}`}>{app.doctorName}</h5>
         <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{app.date} • {app.time}</p>
       </div>
     </div>
 
-    <div className="flex flex-col items-end gap-2 shrink-0 min-w-[110px]">
+    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 sm:min-w-[110px] w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-50 mt-2 sm:mt-0">
       {app.status === 'completed' ? (
         <>
           <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">{t("patient_appointments.completed")}</span>

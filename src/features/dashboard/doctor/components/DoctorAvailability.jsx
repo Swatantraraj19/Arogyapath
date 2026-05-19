@@ -51,7 +51,7 @@ const TimePickerInput = React.memo(({ value, onChange, t }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-[150] bg-white border border-gray-100 rounded-[2rem] shadow-2xl p-4 flex gap-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute top-full right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 mt-3 z-[150] bg-white border border-gray-100 rounded-[2rem] shadow-2xl p-4 flex gap-4 animate-in fade-in sm:zoom-in-95 slide-in-from-top-2 sm:slide-in-from-top-0 duration-200">
           <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 scrollbar-hide">
             <span className="text-[8px] font-black text-gray-300 uppercase text-center mb-1">{t ? t("doctor_availability.hour") : "Hour"}</span>
             {hours.map(h => (
