@@ -10,7 +10,7 @@ const PatientOverview = ({ t, setActiveTab }) => {
     <div className="space-y-10 animate-in fade-in duration-700 pb-10">
 
       {/* 🚀 SMART CHECKER HERO SECTION */}
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-900 rounded-[2rem] p-7 md:p-6 text-white relative overflow-hidden shadow-xl shadow-emerald-500/10">
+      <div className="bg-gradient-to-br from-emerald-600 to-teal-900 rounded-[2rem] p-6 sm:p-8 md:p-10 text-white relative overflow-hidden shadow-xl shadow-emerald-500/10">
         <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
           <div className="flex-1 space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs font-bold">

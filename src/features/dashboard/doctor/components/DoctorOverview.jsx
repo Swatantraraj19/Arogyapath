@@ -57,7 +57,7 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
     <div className="space-y-10 animate-in fade-in duration-700 max-w-7xl mx-auto">
       
       {/* 🚀 PREMIUM HERO SECTION */}
-      <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 rounded-[3.5rem] p-10 md:p-11 text-white relative overflow-hidden shadow-2xl shadow-blue-200/50 group">
+      <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-blue-200/50 group">
         <div className="relative z-10 flex flex-col xl:flex-row items-center gap-12">
           <div className="flex-1 space-y-8 text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest">

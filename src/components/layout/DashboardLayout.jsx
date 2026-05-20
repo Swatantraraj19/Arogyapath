@@ -94,7 +94,7 @@ const DashboardLayout = ({
             </h2>
           </div>
 
-          <div className="flex items-center gap-5 animate-in slide-in-from-right duration-700">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-5 animate-in slide-in-from-right duration-700">
             
             {/* 📍 LOCATION DROPDOWN */}
             <div className="relative" ref={locRef}>

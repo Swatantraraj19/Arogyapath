@@ -56,7 +56,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
     <div className="space-y-4 animate-in fade-in duration-500 pb-10 max-w-4xl mx-auto px-4 md:px-0">
 
       {/* 🌿 PREMIUM GREEN HERO */}
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-9 text-white relative overflow-hidden shadow-lg border border-emerald-500/20">
+      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-9 text-white relative overflow-hidden shadow-lg border border-emerald-500/20">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
 
         <div className="relative z-10 space-y-4">
