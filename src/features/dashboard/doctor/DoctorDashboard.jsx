@@ -61,6 +61,7 @@ const DoctorDashboard = () => {
         await updateDoc(doc(db, "users", currentUser.uid), { role: targetRole });
         navigate(`/dashboard/${targetRole}`);
       } catch (error) {
+        console.error("Role switch failed:", error);
         if (previousRole) {
           localStorage.setItem("roleVerified", previousRole);
           document.body.setAttribute("data-role", previousRole);
@@ -82,6 +83,7 @@ const DoctorDashboard = () => {
       toast.success(t("doctor_dashboard.logout_success"));
       navigate("/", { replace: true });
     } catch (error) {
+      console.error("Doctor logout failed:", error);
       toast.error(t("doctor_dashboard.logout_failed"));
     }
   };

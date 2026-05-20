@@ -52,6 +52,7 @@ const PatientDashboard = () => {
       toast.success(t("auth.sign_out_success"));
       navigate("/");
     } catch (error) {
+      console.error("Patient logout failed:", error);
       toast.error(t("auth.errorUnexpected"));
     }
   };

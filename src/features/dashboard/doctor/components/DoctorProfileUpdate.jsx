@@ -83,6 +83,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
         setPreview(URL.createObjectURL(compressed));
         if (errors.photo) setErrors({ ...errors, photo: null });
       } catch (err) {
+        console.error("Doctor profile image compression failed:", err);
         toast.error(t("profile_setup.failed_image"));
       } finally {
         setLoading(false);
@@ -130,16 +131,12 @@ const DoctorProfileUpdate = ({ existingData }) => {
     formData.append("upload_preset", "arogyapath_preset");
     formData.append("cloud_name", "dgpeicnzd");
 
-    try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/dgpeicnzd/image/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      return data.secure_url;
-    } catch (error) {
-      throw error;
-    }
+    const response = await fetch(`https://api.cloudinary.com/v1_1/dgpeicnzd/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    return data.secure_url;
   };
 
   const handleSubmit = async (e) => {
@@ -182,6 +179,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
 
       toast.success(t("profile_setup.success"));
     } catch (error) {
+      console.error("Doctor profile update failed:", error);
       toast.error(t("auth.errorUnexpected"));
     } finally {
       setLoading(false);

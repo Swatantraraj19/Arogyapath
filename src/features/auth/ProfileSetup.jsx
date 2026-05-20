@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { doc, setDoc, updateDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
+import { doc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { useAuth } from "../../context/AuthContext";
 import { User, Phone, MapPin, Award, Activity, Camera, Mail, ClipboardList, Stethoscope } from "lucide-react";
@@ -101,6 +101,7 @@ const ProfileSetup = () => {
         setPreview(URL.createObjectURL(compressed));
         if (errors.photo) setErrors({ ...errors, photo: null });
       } catch (err) {
+        console.error("Profile image compression failed:", err);
         toast.error(t("profile_setup.failed_image"));
       } finally {
         setLoading(false);

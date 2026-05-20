@@ -77,7 +77,7 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
           const diff = (new Date() - recentCheck.createdAt.toDate()) / (1000 * 60);
           if (diff < COOLDOWN_MINUTES) throw new Error(`Wait ${Math.ceil(COOLDOWN_MINUTES - diff)}m.`);
         }
-      } catch (e) { console.warn("Cooldown skipped"); }
+      } catch (error) { console.warn("Cooldown skipped:", error); }
     }
 
     const rawInput = symptoms.toLowerCase();
@@ -123,7 +123,7 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
     const result = formatFinalResponse(matches, isEmergency, language);
 
     if (userId) {
-      try { await saveCheckHistory(userId, symptoms, result); } catch (e) { console.warn("Save failed"); }
+      try { await saveCheckHistory(userId, symptoms, result); } catch (error) { console.warn("Save failed:", error); }
     }
 
     return result;

@@ -1,11 +1,17 @@
 import React from "react";
-import { Star } from "lucide-react";
+import { Star, X } from "lucide-react";
 
 const RatingModal = ({ isOpen, onClose, ratingValue, setRatingValue, hoverRating, setHoverRating, onSubmit, t }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center space-y-6 shadow-2xl">
+      <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center space-y-6 shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer animate-in fade-in duration-300"
+        >
+          <X size={18} />
+        </button>
         <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
           <Star size={32} className="fill-amber-600" />
         </div>

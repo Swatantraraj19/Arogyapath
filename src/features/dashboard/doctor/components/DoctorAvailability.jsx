@@ -117,7 +117,7 @@ const DoctorAvailability = ({ t }) => {
     };
 
     fetchAvailability();
-  }, [currentUser]);
+  }, [currentUser, t]);
 
   const nextDates = React.useMemo(() => {
     const dates = [];
@@ -251,6 +251,7 @@ const DoctorAvailability = ({ t }) => {
       setNewHoliday("");
       toast.success(t("doctor_availability.holiday_saved") || "Holiday saved successfully!", { icon: '🏖️' });
     } catch (error) {
+      console.error("Save holiday failed:", error);
       toast.error(t("doctor_availability.holiday_failed") || "Failed to save holiday");
     }
   };
@@ -263,6 +264,7 @@ const DoctorAvailability = ({ t }) => {
       setBlockedDates(newDates);
       toast.success(t("doctor_availability.date_unblocked") || "Date unblocked and saved!");
     } catch (error) {
+      console.error("Remove holiday failed:", error);
       toast.error(t("doctor_availability.update_failed") || "Failed to update schedule");
     }
   };
@@ -282,15 +284,7 @@ const DoctorAvailability = ({ t }) => {
   const [conflicts, setConflicts] = useState([]);
   const [showWarning, setShowWarning] = useState(false);
 
-  // 🕒 Helper: Convert 24h (10:30) to 12h (10:30 AM)
-  const format12h = (time24) => {
-    if (!time24) return "";
-    let [h, m] = time24.split(':');
-    h = parseInt(h, 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return `${h.toString().padStart(2, '0')}:${m} ${ampm}`;
-  };
+
 
   // 🕒 Helper: Convert 12h (10:30 AM) to 24h (10:30)
   const to24h = (time12h) => {
@@ -594,7 +588,7 @@ const DoctorAvailability = ({ t }) => {
                 className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
               />
               <button
-                onClick={addHoliday}
+                onClick={handleAddHoliday}
                 className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 shadow-lg shadow-amber-100 active:scale-95 transition-all"
               >
                 {t("doctor_availability.block_date")}

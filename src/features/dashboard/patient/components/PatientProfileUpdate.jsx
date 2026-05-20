@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-hot-toast";
-import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../../../firebase/config";
 import { useAuth } from "../../../../context/AuthContext";
 import { User, Phone, MapPin, Activity, Camera, Mail } from "lucide-react";
@@ -78,6 +78,7 @@ const PatientProfileUpdate = ({ existingData }) => {
         setPreview(URL.createObjectURL(compressed));
         if (errors.photo) setErrors({ ...errors, photo: null });
       } catch (err) {
+        console.error("Patient profile image compression failed:", err);
         toast.error(t("profile_setup.failed_image") || "Failed to process image");
       } finally {
         setLoading(false);
@@ -111,16 +112,12 @@ const PatientProfileUpdate = ({ existingData }) => {
     formData.append("upload_preset", "arogyapath_preset");
     formData.append("cloud_name", "dgpeicnzd");
 
-    try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/dgpeicnzd/image/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      return data.secure_url;
-    } catch (error) {
-      throw error;
-    }
+    const response = await fetch(`https://api.cloudinary.com/v1_1/dgpeicnzd/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    return data.secure_url;
   };
 
   const handleSubmit = async (e) => {
@@ -161,6 +158,7 @@ const PatientProfileUpdate = ({ existingData }) => {
         
       toast.success(t("profile_setup.success"));
     } catch (error) {
+      console.error("Patient profile save failed:", error);
       toast.error(t("auth.errorUnexpected"));
     } finally {
       setLoading(false);

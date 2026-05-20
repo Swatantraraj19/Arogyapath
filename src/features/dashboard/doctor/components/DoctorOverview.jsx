@@ -7,7 +7,6 @@ import { useAuth } from "../../../../context/AuthContext";
 const DoctorOverview = ({ t, onViewSchedule }) => {
   const { currentUser } = useAuth();
   const [appointments, setAppointments] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -21,7 +20,6 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data());
       setAppointments(data);
-      setIsLoading(false);
     });
 
     return () => unsubscribe();

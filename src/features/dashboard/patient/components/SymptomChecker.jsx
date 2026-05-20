@@ -30,7 +30,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
       recognitionRef.current.onerror = () => { setIsListening(false); toast.error(t("symptom_checker.speech_failed")); };
       recognitionRef.current.onend = () => setIsListening(false);
     }
-  }, []);
+  }, [t]);
 
   const toggleListening = () => {
     if (!recognitionRef.current) return toast.error(t("symptom_checker.not_supported"));

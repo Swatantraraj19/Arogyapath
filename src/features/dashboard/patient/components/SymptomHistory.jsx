@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { db } from "../../../../firebase/config";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, where } from "firebase/firestore";
 import { useAuth } from "../../../../context/AuthContext";
 import {
   History,
@@ -75,6 +74,7 @@ const SymptomHistory = () => {
 
   useEffect(() => {
     fetchHistory(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const filteredHistory = React.useMemo(() => history.filter(item =>

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Calendar, Clock, User, ChevronRight, Search, Video, Building2, X, AlertCircle, Phone, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { db } from "../../../../firebase/config";
-import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../../../../context/AuthContext";
 
 const DoctorAppointment = ({ t }) => {
@@ -13,7 +13,6 @@ const DoctorAppointment = ({ t }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [isMoreLoading, setIsMoreLoading] = useState(false);
@@ -108,17 +107,14 @@ const DoctorAppointment = ({ t }) => {
         const historyData = prev.filter(a => a.status !== "upcoming");
         return [...upcomingData, ...historyData];
       });
-      setIsLoading(false);
     }, (error) => {
       console.error("Error fetching upcoming:", error);
-      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, [currentUser]);
 
-  // 📥 Function to fetch History (Completed/Cancelled) with Pagination & Sequence (Latest First)
-  const fetchHistory = async (isLoadMore = false) => {
+  const fetchHistory = useCallback(async (isLoadMore = false) => {
     if (!currentUser || (isLoadMore && !lastVisible)) return;
     
     setIsMoreLoading(true);
@@ -175,15 +171,15 @@ const DoctorAppointment = ({ t }) => {
     } finally {
       setIsMoreLoading(false);
     }
-  };
+  }, [currentUser, lastVisible, activeSubTab, t]);
 
-  // 🔄 Initial History Fetch when switching tabs
   useEffect(() => {
     if (activeSubTab !== "upcoming") {
       setLastVisible(null);
       setHasMore(true);
       fetchHistory(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSubTab]);
 
   // 🛠️ Helper for 24h conversion (needed for sorting)
@@ -257,6 +253,7 @@ const DoctorAppointment = ({ t }) => {
       setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
       toast.success(t("patient_appointments.status_updated") || `Appointment marked as ${newStatus}`, { icon: '✅' });
     } catch (error) {
+      console.error("Action update failed:", error);
       toast.error(t("patient_appointments.status_update_failed") || "Failed to update appointment status");
     }
   };

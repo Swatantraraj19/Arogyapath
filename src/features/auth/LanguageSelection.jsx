@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 
 const LanguageSelection = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -10,7 +10,6 @@ import {
   where,
   onSnapshot,
   doc,
-  getDoc,
   setDoc,
   runTransaction,
   serverTimestamp
@@ -133,7 +132,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
     } finally {
       setIsMoreLoading(false);
     }
-  }, [currentUser, bookingStatusTab, lastVisible]);
+  }, [currentUser, bookingStatusTab, lastVisible, t]);
 
   // 🔄 Trigger fetch when tab changes
   useEffect(() => {
@@ -142,6 +141,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       setHasMore(true);
       fetchHistory(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingStatusTab, activeSubTab]);
 
   // 🔄 SMART DEBOUNCE LOGIC
@@ -196,7 +196,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       recognitionRef.current.start();
       setIsListening(true);
     }
-  }, [isListening]);
+  }, [isListening, t]);
 
   const format12h = useCallback((time24) => {
     if (!time24) return "";
@@ -331,9 +331,6 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       const lockId = `${selectedDoctor.id}_${selectedDate}_${selectedSlot.replace(/\s+/g, '')}`;
       const lockRef = doc(db, "slot_locks", lockId);
       const appointmentRef = doc(collection(db, "appointments"));
-      const pRef = doc(db, "patients", currentUser.uid);
-      const pSnap = await getDoc(pRef);
-      const realPatientName = pSnap.exists() ? pSnap.data().fullName : "Patient";
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let generatedId = '';
       for (let i = 0; i < 5; i++) {
@@ -425,7 +422,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         toast.error(t("patient_appointments.failed_cancel"));
       }
     }
-  }, []);
+  }, [t]);
 
   const submitRating = useCallback(async () => {
     if (ratingValue === 0) return toast.error(t("patient_appointments.select_stars"));
@@ -469,7 +466,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       console.error("Rating Error:", error);
       toast.error(t("patient_appointments.failed_submit_rating"));
     }
-  }, [ratingValue, ratingAppointmentId]);
+  }, [ratingValue, ratingAppointmentId, t]);
 
   // 🧠 SMART SEARCH LOGIC (Synonyms + Keyword Splitting + Ranking)
   const filteredDoctors = useMemo(() => {

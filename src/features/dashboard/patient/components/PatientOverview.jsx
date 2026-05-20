@@ -1,11 +1,10 @@
 import React from "react";
 import { BrainCircuit, Sparkles, Activity, Lightbulb, ClipboardCheck, PlusCircle } from "lucide-react";
 
-const PatientOverview = ({ t, userDoc, setActiveTab }) => {
+const PatientOverview = ({ t, setActiveTab }) => {
   const healthTips = t("health_tips", { returnObjects: true });
 
   const dailyTip = healthTips[Math.floor(Math.random() * healthTips.length)];
-  const firstName = userDoc?.fullName?.split(" ")[0] || "there";
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-10">

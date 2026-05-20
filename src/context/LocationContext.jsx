@@ -1,4 +1,4 @@
-
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 
@@ -42,7 +42,7 @@ export const LocationProvider = ({ children }) => {
     };
 
     if (!document.getElementById("google-maps-sdk")) document.head.appendChild(script);
-  }, [GOOGLE_API_KEY]);
+  }, [GOOGLE_API_KEY, autocompleteService]);
 
   // 📍 MANUAL DETECT LOCATION
   const handleDetectLocation = async () => {
