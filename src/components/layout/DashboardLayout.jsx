@@ -87,14 +87,14 @@ const DashboardLayout = ({
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto z-10 custom-scrollbar relative">
 
         {/* TOP BAR / HEADER */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-          <div className="animate-in slide-in-from-left duration-700">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-8 md:mb-12">
+          <div className="animate-in slide-in-from-left duration-700 shrink-0">
             <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
               {t("dashboard.hello")} <span className={`text-${roleColor}-600`}>{welcomeName}</span>
             </h2>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-5 animate-in slide-in-from-right duration-700">
+          <div className="flex items-center gap-3 md:gap-4 animate-in slide-in-from-right duration-700 shrink-0">
             
             {/* 📍 LOCATION DROPDOWN */}
             <div className="relative" ref={locRef}>
