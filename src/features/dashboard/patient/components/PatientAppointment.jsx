@@ -596,14 +596,14 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
       
       {/* 📑 Status Tabs for My Bookings */}
       {activeSubTab === "my" && (
-        <div className="flex flex-wrap gap-2 px-1 animate-in fade-in slide-in-from-left-4 duration-500">
+        <div className="flex w-full overflow-x-auto gap-1.5 md:gap-2 px-1 pb-1 animate-in fade-in slide-in-from-left-4 duration-500 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {["upcoming", "completed", "cancelled"].map((tab) => (
             <button
               key={tab}
               onClick={() => setBookingStatusTab(tab)}
-              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`flex-1 whitespace-nowrap px-2 md:px-6 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
                 bookingStatusTab === tab
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100 scale-105"
+                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
                   : "bg-white text-gray-400 border border-gray-100 hover:border-emerald-200 hover:text-gray-600"
               }`}
             >

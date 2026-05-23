@@ -39,6 +39,11 @@ const ProfileSetup = () => {
     }
   }, [role]);
 
+  // 🚀 Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // 🛡️ NAVIGATION GUARD: If already finished this specific role, skip setup
   useEffect(() => {
     if (userDoc?.completedRoles?.includes(role)) {

@@ -116,11 +116,11 @@ const DoctorAppointment = ({ t }) => {
 
   const fetchHistory = useCallback(async (isLoadMore = false) => {
     if (!currentUser || (isLoadMore && !lastVisible)) return;
-    
+
     setIsMoreLoading(true);
     try {
       const { getDocs, limit, startAfter, orderBy } = await import("firebase/firestore");
-      
+
       let q = query(
         collection(db, "appointments"),
         where("doctorId", "==", currentUser.uid),
@@ -159,8 +159,8 @@ const DoctorAppointment = ({ t }) => {
 
       setAppointments(prev => {
         const upcomingData = prev.filter(a => a.status === "upcoming");
-        const otherHistory = isLoadMore 
-          ? prev.filter(a => a.status !== "upcoming") 
+        const otherHistory = isLoadMore
+          ? prev.filter(a => a.status !== "upcoming")
           : prev.filter(a => a.status !== "upcoming" && a.status !== activeSubTab);
         return [...upcomingData, ...otherHistory, ...newHistory];
       });
@@ -261,13 +261,23 @@ const DoctorAppointment = ({ t }) => {
   const startVideoCall = async (app) => {
     try {
       let roomId = app.meetingRoomId;
+      let needsUpdate = false;
+      
       if (!roomId) {
+        const shortHash = Math.random().toString(36).substring(2, 10);
+        roomId = `ArogyaPath_${shortHash}_${app.id ? app.id.slice(-4) : 'call'}`;
+        needsUpdate = true;
+      }
+      
+      // 🚀 Open window IMMEDIATELY to prevent Safari/Chrome from blocking the popup!
+      window.open(`https://meet.jit.si/${roomId}`, '_blank');
+      
+      if (needsUpdate) {
+        // Run DB update asynchronously without blocking the window
         const { doc, updateDoc } = await import("firebase/firestore");
-        const shortHash = crypto.randomUUID().split('-')[0];
-        roomId = `ArogyaPath_${shortHash}_${app.id.slice(-4)}`;
         await updateDoc(doc(db, "appointments", app.id), { meetingRoomId: roomId });
       }
-      window.open(`/video-call/${roomId}`, '_blank');
+      
       toast.success(t("patient_appointments.opening_video") || "Opening Video Consultation...");
     } catch (error) {
       console.error("Video Call Error:", error);
@@ -280,10 +290,10 @@ const DoctorAppointment = ({ t }) => {
 
       {/* 🔍 HEADER & FILTERS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex gap-2 p-1.5 bg-gray-100/50 rounded-2xl w-fit">
-          <button onClick={() => setActiveSubTab("upcoming")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "upcoming" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.upcoming")}</button>
-          <button onClick={() => setActiveSubTab("completed")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "completed" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.completed")}</button>
-          <button onClick={() => setActiveSubTab("cancelled")} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "cancelled" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.cancelled")}</button>
+        <div className="flex w-full md:w-fit overflow-x-auto gap-1.5 md:gap-2 p-1.5 bg-gray-100/50 rounded-2xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <button onClick={() => setActiveSubTab("upcoming")} className={`whitespace-nowrap flex-1 md:flex-none px-3 md:px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "upcoming" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.upcoming")}</button>
+          <button onClick={() => setActiveSubTab("completed")} className={`whitespace-nowrap flex-1 md:flex-none px-3 md:px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "completed" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.completed")}</button>
+          <button onClick={() => setActiveSubTab("cancelled")} className={`whitespace-nowrap flex-1 md:flex-none px-3 md:px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "cancelled" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.cancelled")}</button>
         </div>
 
         <div className="relative group min-w-[300px]">
@@ -299,7 +309,7 @@ const DoctorAppointment = ({ t }) => {
       </div>
 
       {/* 🏷️ CONSULT TYPE FILTERS */}
-      <div className="flex flex-wrap gap-2 px-1">
+      <div className="flex overflow-x-auto gap-2 px-1 pr-6 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {[
           { id: "All", label: t("appointments.all_consults"), icon: null },
           { id: "Clinic Visit", label: t("appointments.clinic_visit"), icon: <Building2 size={12} /> },
@@ -308,7 +318,7 @@ const DoctorAppointment = ({ t }) => {
           <button
             key={type.id}
             onClick={() => setFilterType(type.id)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border ${filterType === type.id
+            className={`whitespace-nowrap shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border ${filterType === type.id
               ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100"
               : "bg-white text-gray-400 border-gray-100 hover:border-blue-200 hover:text-gray-600"
               }`}
@@ -339,62 +349,78 @@ const DoctorAppointment = ({ t }) => {
                   <div
                     key={app.id}
                     onClick={() => { setSelectedAppointment(app); setIsDetailModalOpen(true); }}
-                    className={`group bg-white p-5 rounded-[2rem] border border-gray-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/5 transition-all cursor-pointer flex items-center gap-6 ${app.status === 'cancelled' ? 'opacity-60' : ''}`}
+                    className={`group bg-white p-4 md:p-5 rounded-3xl md:rounded-[2rem] border border-gray-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/5 transition-all cursor-pointer flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 ${app.status === 'cancelled' ? 'opacity-60' : ''}`}
                   >
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${app.status === 'upcoming' ? 'bg-blue-50 text-blue-600' : app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-                      <User size={28} />
-                    </div>
 
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className={`px-2.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${app.status === 'upcoming' ? 'bg-blue-100 text-blue-700' : app.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                          {t(`appointments.${app.status}`)}
-                        </span>
-                        <span className="text-[10px] font-bold text-gray-400">{app.bookingId || app.id}</span>
+                    {/* AVATAR & MAIN DETAILS */}
+                    <div className="flex items-start gap-3 md:gap-4 w-full md:flex-1">
+                      <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 ${app.status === 'upcoming' ? 'bg-blue-50 text-blue-600' : app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                        <User className="w-6 h-6 md:w-7 md:h-7" />
                       </div>
-                      <h4 className="text-lg font-black text-gray-900 group-hover:text-blue-600 transition-colors">{app.patientName}</h4>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md">{app.age} yrs • {app.gender}</p>
-                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <Phone size={10} /> {app.phone}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="flex flex-row md:flex-col gap-4 md:gap-1 text-left">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Calendar size={14} className="text-gray-400" />
-                        <span className="text-xs font-black">{app.date}</span>
-                      </div>
-                      {app.status === 'active' ? (
-                        <div className="flex items-center gap-2 text-emerald-600 animate-pulse">
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                          <span className="text-[11px] font-black uppercase tracking-widest">{t("appointments.in_progress")}</span>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${app.status === 'upcoming' ? 'bg-blue-100 text-blue-700' : app.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            {t(`appointments.${app.status}`)}
+                          </span>
+                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 truncate">{app.bookingId || app.id}</span>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <Clock size={14} />
-                          <span className="text-[11px] font-bold">{app.time}</span>
+                        <h4 className="text-base md:text-lg font-black text-gray-900 group-hover:text-blue-600 transition-colors truncate">{app.patientName}</h4>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md">{app.age} yrs • {app.gender}</p>
+                          <p className="text-[9px] md:text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <Phone size={10} /> {app.phone}
+                          </p>
                         </div>
-                      )}
+                      </div>
+
+                      {/* MOBILE CHEVRON */}
+                      <div className="md:hidden mt-2 shrink-0">
+                        <ChevronRight size={18} className="text-gray-300" />
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3 ml-auto">
-                      {app.status === 'upcoming' && app.type === 'Video Consult' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startVideoCall(app);
-                          }}
-                          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
-                        >
-                          <Video size={14} />
-                          {app.meetingRoomId ? t("appointments.join_call") : t("appointments.start_call")}
+                    {/* MOBILE DIVIDER */}
+                    <div className="w-full h-px bg-gray-50 md:hidden"></div>
+
+                    {/* DATE, TIME & ACTIONS */}
+                    <div className="flex items-center justify-between w-full md:w-auto md:gap-8 shrink-0">
+                      <div className="flex flex-row md:flex-col gap-4 md:gap-1 text-left shrink-0">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar size={14} className="text-gray-400" />
+                          <span className="text-[11px] md:text-xs font-black">{app.date}</span>
+                        </div>
+                        {app.status === 'active' ? (
+                          <div className="flex items-center gap-2 text-emerald-600 animate-pulse">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                            <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">{t("appointments.in_progress")}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <Clock size={14} />
+                            <span className="text-[10px] md:text-[11px] font-bold">{app.time}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-3 ml-auto">
+                        {app.status === 'upcoming' && app.type === 'Video Consult' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startVideoCall(app);
+                            }}
+                            className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-blue-600 text-white rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 shrink-0"
+                          >
+                            <Video size={14} />
+                            {app.meetingRoomId ? t("appointments.join_call") : t("appointments.start_call")}
+                          </button>
+                        )}
+                        {/* DESKTOP CHEVRON */}
+                        <button className="hidden md:flex p-3 bg-gray-50 text-gray-400 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-all shrink-0">
+                          <ChevronRight size={20} />
                         </button>
-                      )}
-                      <button className="p-3 bg-gray-50 text-gray-400 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
-                        <ChevronRight size={20} />
-                      </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -409,11 +435,10 @@ const DoctorAppointment = ({ t }) => {
             <button
               onClick={() => fetchHistory(true)}
               disabled={isMoreLoading}
-              className={`group flex items-center gap-3 px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${
-                isMoreLoading 
-                ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
-                : 'bg-white text-blue-600 border border-blue-100 hover:border-blue-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-95'
-              }`}
+              className={`group flex items-center gap-3 px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${isMoreLoading
+                  ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-blue-600 border border-blue-100 hover:border-blue-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-95'
+                }`}
             >
               {isMoreLoading ? (
                 <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
