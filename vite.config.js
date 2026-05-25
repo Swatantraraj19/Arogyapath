@@ -17,7 +17,7 @@ export default defineConfig({
         'favicon-32x32.png',
         'apple-touch-icon.png',
         'pwa-192x192.png',
-        'pwa-512x512.webp',
+        'pwa-512x512.png',
       ],
 
       // 📄 Web App Manifest — defines how app looks when installed
@@ -38,14 +38,14 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: '/pwa-512x512.webp',
+            src: '/pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/webp',
+            type: 'image/png',
           },
           {
-            src: '/pwa-512x512.webp',
+            src: '/pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/webp',
+            type: 'image/png',
             purpose: 'maskable', // 🎭 Adaptive icon support for Android
           },
         ],
