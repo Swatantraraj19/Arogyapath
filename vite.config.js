@@ -49,6 +49,22 @@ export default defineConfig({
             purpose: 'maskable', // 🎭 Adaptive icon support for Android
           },
         ],
+        screenshots: [
+          {
+            src: '/desktop_pwa.png',
+            sizes: '1853x887',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'ArogyaPath Desktop Dashboard'
+          },
+          {
+            src: '/mobile_pwa.png',
+            sizes: '871x1600',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'ArogyaPath Mobile Interface'
+          }
+        ],
       },
 
       // ⚙️ Workbox strategy — cache app shell + static assets offline

@@ -31,6 +31,15 @@
   <meta property="og:title" content="ArogyaPath" />
   <meta property="og:description" content="AI-powered symptom checker and doctor appointment booking platform." />
   <meta property="og:image" content="/pwa-512x512.png" />
+
+  <!-- PWA Early Install Prompt Capture -->
+  <script>
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+      window.dispatchEvent(new CustomEvent('pwa-installable'));
+    });
+  </script>
 </head>
 
 <body>

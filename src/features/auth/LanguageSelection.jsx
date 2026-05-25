@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
@@ -6,11 +6,45 @@ import logo from "../../assets/logo.png";
 const LanguageSelection = () => {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
+  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPrompt || null);
 
   useEffect(() => {
     // 🧠 ROLE-BASED SWITCH: Initializing with "patient" theme logic (Green)
     document.body.setAttribute("data-role", "patient");
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleCustomInstallable = () => {
+      setDeferredPrompt(window.deferredPrompt);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("pwa-installable", handleCustomInstallable);
+
+    // If the event fired before mounting, capture it
+    if (window.deferredPrompt) {
+      setDeferredPrompt(window.deferredPrompt);
+    }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("pwa-installable", handleCustomInstallable);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    const promptEvent = deferredPrompt || window.deferredPrompt;
+    if (!promptEvent) return;
+    promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+      window.deferredPrompt = null;
+    }
+  };
 
   const handleLanguageSelect = (lng) => {
     i18n.changeLanguage(lng);
@@ -19,7 +53,32 @@ const LanguageSelection = () => {
 
   return (
     // 🟣 STEP 6: SPACING SYSTEM
-    <div className="flex items-center justify-center min-h-[90vh] p-6">
+    <div className="relative flex items-center justify-center min-h-[90vh] p-6 w-full">
+      {deferredPrompt && (
+        <button
+          onClick={handleInstallClick}
+          className="absolute top-4 right-4 md:top-6 md:right-6 bg-white hover:bg-emerald-50 text-emerald-600 border border-emerald-100 hover:border-emerald-500 hover:shadow-md px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg text-[9px] md:text-xs font-extrabold tracking-wider transition-all duration-300 flex items-center gap-1 md:gap-1.5 shadow-sm animate-in fade-in slide-in-from-top-4 z-50"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="14" 
+            height="14" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className="h-3 w-3 md:h-3.5 md:w-3.5 animate-bounce"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>INSTALL APP</span>
+        </button>
+      )}
+
       <div className="max-w-md w-full text-center space-y-10 animate-in fade-in duration-1000">
 
         {/* LOGO SECTION */}
