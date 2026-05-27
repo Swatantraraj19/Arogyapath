@@ -136,7 +136,7 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
       // 🚀 CALL GEMINI API
       const isHindi = language && language.startsWith('hi');
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: {
