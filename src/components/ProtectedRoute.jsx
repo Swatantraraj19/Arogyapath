@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, userDoc, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -28,6 +28,13 @@ const ProtectedRoute = ({ children }) => {
     const pathSegments = location.pathname.split("/");
     const requestedRole = pathSegments[2]; // Index 2 is the segment after 'dashboard'
     
+    // 🛡️ ULTIMATE SECURITY: Check the official database record
+    const hasPermission = userDoc?.completedRoles?.includes(requestedRole);
+
+    if (!hasPermission) {
+      return <Navigate to="/role-entry" replace />;
+    }
+
     // 🚀 SEAMLESS REDIRECT: Only if they are trying to enter the WRONG dashboard
     if (roleVerified && requestedRole && roleVerified !== requestedRole) {
       return <Navigate to={`/dashboard/${roleVerified}`} replace />;
