@@ -164,6 +164,17 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                       </div>
                     </div>
                   )}
+
+                  {assessment.reasoning && (
+                    <div className="p-3 bg-emerald-50/10 border border-emerald-100/20 rounded-2xl text-left mt-2 relative overflow-hidden">
+                      <span className="text-[8px] font-black text-emerald-700/60 uppercase tracking-wider block mb-1">
+                        💡 {i18n.language?.startsWith('hi') ? "एआई विश्लेषण (यह सुझाव क्यों?)" : "AI Analysis (Why this suggestion?)"}
+                      </span>
+                      <p className="text-xs font-semibold text-emerald-800/80 leading-relaxed">
+                        {assessment.reasoning}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* ✅ SUGGESTED ACTIONS */}

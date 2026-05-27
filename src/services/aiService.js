@@ -161,6 +161,7 @@ JSON Schema:
   "possibleIssues": ["List of 1-2 potential common causes or issues in the target language"],
   "confidence": number (an integer between 20 and 100 based on your confidence),
   "emergency": boolean (true ONLY if severe medical emergency signs like chest pain, heavy bleeding, unconsciousness, severe breathing problems),
+  "reasoning": "A simple, friendly 1-sentence explanation in the target language of why this specialist is recommended based on the symptoms",
   "disclaimer": "Not a diagnosis. Seek professional medical advice."
 }`,
                   },
@@ -215,6 +216,9 @@ const formatFinalResponse = (matches, isEmergency, language) => {
       possibleIssues: [],
       confidence: 0,
       emergency: isEmergency,
+      reasoning: isHindi 
+        ? "आपके लक्षणों के लिए हमारे डेटाबेस में कोई सीधा नियम नहीं मिला, इसलिए सामान्य चिकित्सक से परामर्श करने की सलाह दी जाती है।" 
+        : "No direct rule matched in our database, a consultation with a General Physician is recommended for initial assessment.",
       type: "Guidance",
       disclaimer: "Legal Disclaimer: Not a diagnosis."
     };
@@ -233,6 +237,9 @@ const formatFinalResponse = (matches, isEmergency, language) => {
     possibleIssues: [...new Set(matches.flatMap(m => m.displayIssues))],
     confidence: primary.confidence,
     emergency: isEmergency,
+    reasoning: isHindi
+      ? `आपके बताए गए लक्षणों के आधार पर ${primary.displaySpecialty} से परामर्श करने की सलाह दी जाती है।`
+      : `Based on the keywords in your symptoms, a consultation with a ${primary.displaySpecialty} is recommended.`,
     type: "Smart Guidance",
     disclaimer: "Not a diagnosis. Seek professional advice."
   };
