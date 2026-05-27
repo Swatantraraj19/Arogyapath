@@ -66,6 +66,51 @@ const normalizeWord = (word) => {
   return w.replace(/ing$|s$|es$/i, '');
 };
 
+// 🏠 OLD HARDCODED RULES SYSTEM (FALLBACK SAFETY NET)
+const analyzeSymptomsLocal = (symptoms, language = "en") => {
+  const rawInput = symptoms.toLowerCase();
+  const tokens = rawInput.split(/[\s,.;?]+/).map(normalizeWord).filter(t => t.length > 1);
+
+  const isEmergency = EMERGENCY_KEYWORDS.some(ek => rawInput.includes(ek));
+  let matches = [];
+
+  SYMPTOM_RULES.forEach(rule => {
+    let score = 0;
+    let matchedCount = 0;
+
+    const allTerms = [...rule.keywords.map(k => ({ t: k, w: 5 })), ...rule.aliases.map(a => ({ t: a, w: 2 }))];
+
+    allTerms.forEach(term => {
+      const termTokens = term.t.split(" ").map(normalizeWord).filter(t => t.length > 1);
+      const isMatch = termTokens.every(tt => tokens.includes(tt));
+      if (isMatch) {
+        score += term.w;
+        matchedCount++;
+      }
+    });
+
+    if (matchedCount > 0) {
+      if (isEmergency && rule.id === "cardiology" && rawInput.includes("chest")) score += 10;
+      const confidence = Math.min((score / 10) * 100, 100);
+      
+      const isHindi = language && language.startsWith('hi');
+      
+      if (confidence >= MIN_CONFIDENCE || (isEmergency && rule.id === "cardiology")) {
+        matches.push({
+          ...rule,
+          confidence: Math.round(confidence),
+          displaySpecialty: (isHindi && rule.specialty['hi']) ? rule.specialty['hi'] : rule.specialty['en'],
+          displayPrecautions: (isHindi && rule.precautions['hi']) ? rule.precautions['hi'] : rule.precautions['en'],
+          displayIssues: (isHindi && rule.possibleIssues['hi']) ? rule.possibleIssues['hi'] : rule.possibleIssues['en']
+        });
+      }
+    }
+  });
+
+  matches.sort((a, b) => b.confidence - a.confidence);
+  return formatFinalResponse(matches, isEmergency, language);
+};
+
 export const analyzeSymptoms = async (symptoms, userId = null, language = "en") => {
   try {
     if (symptoms.length > MAX_CHARS) throw new Error("Input too long");
@@ -80,47 +125,71 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
       } catch (error) { console.warn("Cooldown skipped:", error); }
     }
 
-    const rawInput = symptoms.toLowerCase();
-    const tokens = rawInput.split(/[\s,.;?]+/).map(normalizeWord).filter(t => t.length > 1);
+    let result;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-    const isEmergency = EMERGENCY_KEYWORDS.some(ek => rawInput.includes(ek));
-    let matches = [];
+    if (!apiKey) {
+      throw new Error("Gemini API Key missing, using local fallback");
+    }
 
-    SYMPTOM_RULES.forEach(rule => {
-      let score = 0;
-      let matchedCount = 0;
+    try {
+      // 🚀 CALL GEMINI API
+      const isHindi = language && language.startsWith('hi');
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Analyze these medical symptoms in ${isHindi ? 'Hindi' : 'English'}.
+Symptoms description: "${symptoms}"
 
-      const allTerms = [...rule.keywords.map(k => ({ t: k, w: 5 })), ...rule.aliases.map(a => ({ t: a, w: 2 }))];
+You must output ONLY a valid JSON object matching the schema below. Do not wrap it in markdown block, do not include any backticks or explanatory text. Just the raw JSON.
 
-      allTerms.forEach(term => {
-        const termTokens = term.t.split(" ").map(normalizeWord).filter(t => t.length > 1);
-        const isMatch = termTokens.every(tt => tokens.includes(tt));
-        if (isMatch) {
-          score += term.w;
-          matchedCount++;
+JSON Schema:
+{
+  "suggestion": "Brief doctor consultation advice statement in the target language (e.g. Primary Guidance: Dentist consultation recommended)",
+  "primarySpecialist": "The single most appropriate doctor specialty in English (e.g. Cardiologist, Dentist, Dermatologist, Pediatrician, Neurologist, Orthopedist, General Physician, Gynecologist, Ophthalmologist)",
+  "secondarySpecialists": ["Up to 2 other alternative doctor specialties in English"],
+  "precautions": ["List of 2-3 temporary steps or precautions in the target language"],
+  "possibleIssues": ["List of 1-2 potential common causes or issues in the target language"],
+  "confidence": number (an integer between 20 and 100 based on your confidence),
+  "emergency": boolean (true ONLY if severe medical emergency signs like chest pain, heavy bleeding, unconsciousness, severe breathing problems),
+  "disclaimer": "Not a diagnosis. Seek professional medical advice."
+}`,
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              responseMimeType: "application/json",
+            },
+          }),
         }
-      });
+      );
 
-      if (matchedCount > 0) {
-        if (isEmergency && rule.id === "cardiology" && rawInput.includes("chest")) score += 10;
-        const confidence = Math.min((score / 10) * 100, 100);
-        
-        const isHindi = language && language.startsWith('hi');
-        
-        if (confidence >= MIN_CONFIDENCE || (isEmergency && rule.id === "cardiology")) {
-          matches.push({
-            ...rule,
-            confidence: Math.round(confidence),
-            displaySpecialty: (isHindi && rule.specialty['hi']) ? rule.specialty['hi'] : rule.specialty['en'],
-            displayPrecautions: (isHindi && rule.precautions['hi']) ? rule.precautions['hi'] : rule.precautions['en'],
-            displayIssues: (isHindi && rule.possibleIssues['hi']) ? rule.possibleIssues['hi'] : rule.possibleIssues['en']
-          });
-        }
+      if (!response.ok) {
+        throw new Error(`Gemini API HTTP status: ${response.status}`);
       }
-    });
 
-    matches.sort((a, b) => b.confidence - a.confidence);
-    const result = formatFinalResponse(matches, isEmergency, language);
+      const responseData = await response.json();
+      const text = responseData?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!text) throw new Error("Empty text returned from Gemini API");
+
+      result = JSON.parse(text);
+      result.type = "AI Smart Guidance";
+    } catch (apiError) {
+      console.warn("Gemini API failed, using local rule-engine fallback:", apiError);
+      result = analyzeSymptomsLocal(symptoms, language);
+      result.type = "Local Fallback Guidance";
+    }
 
     if (userId) {
       try { await saveCheckHistory(userId, symptoms, result); } catch (error) { console.warn("Save failed:", error); }
