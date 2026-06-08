@@ -13,6 +13,11 @@ const MyBookingCard = ({ app, onClick, onCancel, onRate, t }) => (
       <div className="text-left flex-1">
         <h5 className={`font-black text-gray-900 leading-tight ${app.status === 'cancelled' ? 'opacity-50' : ''}`}>{app.doctorName}</h5>
         <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{app.date} • {app.time}</p>
+        {app.isForFamily && (
+          <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-widest">
+            👨‍👩‍👧 {app.patientName}
+          </span>
+        )}
       </div>
     </div>
 

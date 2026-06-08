@@ -44,6 +44,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
   const [currentBookingId, setCurrentBookingId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // 👨‍👩‍👧 Family Member Booking States
+  const [bookingFor, setBookingFor] = useState("myself");
+  const [familyMember, setFamilyMember] = useState({ name: "", age: "", gender: "Male", phone: "" });
+
   // ⭐ Rating States
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [ratingValue, setRatingValue] = useState(0);
@@ -213,7 +217,9 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
 
   const handleBookClick = useCallback(async (doctor) => {
     setSelectedDoctor(doctor);
-    setBookingStep(1);
+    setBookingStep(0);  // 👨‍👩‍👧 Start at Step 0: Who is this for?
+    setBookingFor("myself"); // Reset to default
+    setFamilyMember({ name: "", age: "", gender: "Male", phone: "" }); // Reset form
     setSelectedDate(availableDates[0].full);
     setSelectedSlot(null);
     setConsultationMode("clinic");
@@ -323,7 +329,14 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
     }
   }, [selectedDate, selectedDoctor?.availability, bookedSlots, generateSlotsForDate]);
 
-  const confirmBooking = async () => {
+  const confirmBooking = async (action) => {
+    // 👨‍👩‍👧 Step 0 → Step 1: Just move forward, no Firestore call yet
+    if (action === "proceed_to_step1") {
+      setBookingStep(1);
+      return;
+    }
+
+    // Step 1 → Confirm: actual Firestore booking
     if (!currentUser) return toast.error(t("auth.session_not_found"));
     if (!selectedSlot) return toast.error(t("patient_appointments.select_time_slot"));
     setIsProcessing(true);
@@ -337,7 +350,7 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         generatedId += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       await runTransaction(db, async (transaction) => {
-        // 🛡️ Fetch Patient Data within transaction
+        // 🛡️ Fetch Patient (account owner) Data within transaction
         const pRef = doc(db, "patients", currentUser.uid);
         const pSnap = await transaction.get(pRef);
         const pData = pSnap.exists() ? pSnap.data() : {};
@@ -346,13 +359,21 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         if (lockSnap.exists()) {
           throw new Error("This slot has just been booked by someone else!");
         }
+
+        // 👨‍👩‍👧 Use family member data OR account owner data
+        const isFamily = bookingFor === "family";
         const appointmentData = {
           bookingId: generatedId,
-          patientId: currentUser.uid,
-          patientName: pData.fullName || currentUser.displayName || "Patient",
-          patientAge: pData.age || "N/A",
-          patientGender: pData.gender || "N/A",
-          patientPhone: pData.phone || currentUser.phoneNumber || "N/A",
+          patientId: currentUser.uid,  // Always the account owner's UID
+          patientName: isFamily ? familyMember.name : (pData.fullName || currentUser.displayName || "Patient"),
+          patientAge: isFamily ? familyMember.age : (pData.age || "N/A"),
+          patientGender: isFamily ? familyMember.gender : (pData.gender || "N/A"),
+          patientPhone: isFamily ? familyMember.phone : (pData.phone || currentUser.phoneNumber || "N/A"),
+          // Family member extra fields (only set when booking for family)
+          ...(isFamily && {
+            isForFamily: true,
+            bookedBy: pData.fullName || currentUser.displayName || "Account Owner",
+          }),
           doctorId: selectedDoctor.id,
           doctorName: selectedDoctor.fullName || selectedDoctor.name,
           doctorPhone: selectedDoctor.phone || "N/A",
@@ -692,6 +713,10 @@ const PatientAppointment = ({ t, initialSearch = "" }) => {
         confirmBooking={confirmBooking}
         currentBookingId={currentBookingId}
         t={t}
+        bookingFor={bookingFor}
+        setBookingFor={setBookingFor}
+        familyMember={familyMember}
+        setFamilyMember={setFamilyMember}
       />
     </div>
   );
