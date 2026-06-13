@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   Clock,
   ArrowUpRight,
-  RefreshCw
+  RefreshCw,
+  X
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -217,7 +218,7 @@ const SymptomHistory = () => {
                   onClick={() => setSelectedRecord(null)}
                   className="p-3 bg-gray-50 rounded-2xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
                 >
-                  <ArrowUpRight className="rotate-180" size={20} />
+                  <X size={20} />
                 </button>
               </div>
 
