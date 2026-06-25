@@ -61,7 +61,7 @@ const DashboardLayout = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden font-sans">
-      {/* 🔮 AMBIENT BACKGROUND ORBS */}
+      {/*  AMBIENT BACKGROUND ORBS */}
       <div className={`fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-${roleColor}-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
       <div className={`fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-${roleColor}-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
 
@@ -76,8 +76,7 @@ const DashboardLayout = ({
         setIsMobileOpen={setSidebarOpen}
         roleColor={roleColor}
       />
-
-      {/* 🖥️ MAIN CONTENT AREA */}
+  {/* 🖥️ MAIN CONTENT AREA */}
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto z-10 custom-scrollbar relative">
 
         {/* TOP BAR / HEADER */}
