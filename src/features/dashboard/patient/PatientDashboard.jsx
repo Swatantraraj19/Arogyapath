@@ -24,7 +24,7 @@ const PatientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
 
-  // 🔄 REAL-TIME PATIENT PROFILE LISTENER
+  // REAL-TIME PATIENT PROFILE LISTENER
   useEffect(() => {
     if (!currentUser) return;
     const docRef = doc(db, "patients", currentUser.uid);
@@ -63,12 +63,12 @@ const PatientDashboard = () => {
       const isCompleted = userDoc?.completedRoles?.includes(targetRole);
 
       if (isCompleted) {
-        // 🛡️ AUTH SYNC: Set verification and update cloud role
+        // AUTH SYNC: Set verification and update cloud role
         localStorage.setItem("roleVerified", targetRole);
         await updateDoc(doc(db, "users", currentUser.uid), { role: targetRole });
         navigate("/dashboard/doctor");
       } else {
-        // 📝 ONBOARDING: Redirect to setup if first time
+        // ONBOARDING: Redirect to setup if first time
         toast(t("dashboard.switch_to_doctor") + "...", { icon: "🔄" });
         navigate(`/profile-setup/${targetRole}`);
       }
@@ -111,7 +111,7 @@ const PatientDashboard = () => {
       roleColor="emerald"
       welcomeName={(displayData?.fullName || "there").split(" ")[0]}
     >
-      {/* 🧩 TAB CONTENT */}
+      {/* TAB CONTENT */}
       {activeTab === "overview" && (
         <PatientOverview
           t={t}
@@ -140,7 +140,6 @@ const PatientDashboard = () => {
         />
       )}
 
-      {/* 🚧 COMING SOON SECTIONS */}
       {activeTab === "history" && (
         <SymptomHistory />
       )}

@@ -21,15 +21,15 @@ const DoctorDashboard = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🚀 SCROLL TO TOP ON MOUNT
+  //  SCROLL TO TOP ON MOUNT
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Also scroll the main container if it exists
+    
     const mainContent = document.querySelector('main');
     if (mainContent) mainContent.scrollTop = 0;
   }, []);
 
-  // 🧬 Fetch Role-Specific Details (Deep Hydration)
+  //  Fetch Role-Specific Details 
   useEffect(() => {
     if (!currentUser) return;
     const docRef = doc(db, "doctors", currentUser.uid);
@@ -47,7 +47,7 @@ const DoctorDashboard = () => {
     return () => unsubscribe();
   }, [currentUser, userDoc]);
 
-  // 🔄 ROLE SWITCH LOGIC
+  //  ROLE SWITCH LOGIC
   const handleRoleSwitch = async () => {
     const targetRole = "patient";
     const completedRoles = userDoc?.completedRoles || [];
@@ -88,8 +88,7 @@ const DoctorDashboard = () => {
     }
   };
 
-  // 🔗 NAVIGATION CONFIG
-  // 📌 Auto Scroll to Top on Tab Change
+  //  Auto Scroll to Top on Tab Change
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeTab]);
@@ -124,12 +123,12 @@ const DoctorDashboard = () => {
       roleColor="blue"
       welcomeName={`Dr. ${(profileData?.fullName || userDoc?.fullName || "Consultant").split(" ")[0]}`}
     >
-      {/* 🧩 TAB CONTENT */}
+      {/*  TAB CONTENT */}
       {activeTab === "overview" && (
-        <DoctorOverview 
-          t={t} 
-          userDoc={profileData || userDoc} 
-          onViewSchedule={() => setActiveTab("appointments")} 
+        <DoctorOverview
+          t={t}
+          userDoc={profileData || userDoc}
+          onViewSchedule={() => setActiveTab("appointments")}
         />
       )}
 
@@ -141,9 +140,9 @@ const DoctorDashboard = () => {
 
       {activeTab === "availability" && <DoctorAvailability t={t} />}
 
-      {activeTab === "profile" && 
-      <DoctorProfileUpdate existingData={profileData || userDoc} />}
-      
+      {activeTab === "profile" &&
+        <DoctorProfileUpdate existingData={profileData || userDoc} />}
+
     </DashboardLayout>
   );
 };

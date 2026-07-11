@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* 🏁 MENTOR NOTE: Mapping your SECRET FINAL combination to Tailwind v4 */
+  /* Mapping your SECRET FINAL combination to Tailwind v4 */
   --color-primary: var(--color-primary);
   --color-secondary: var(--color-secondary);
   --color-accent: var(--color-accent);
@@ -16,7 +16,7 @@
 }
 
 :root {
-  /* STEP 1: SET GLOBAL FOUNDATION (Official Variables) */
+  /* SET GLOBAL FOUNDATION (Official Variables) */
   
   /* Brand Colors */
   --color-primary: #16a34a;   /* Primary-600 */
@@ -36,7 +36,7 @@
   --border-light: #e5e7eb;
 }
 
-/* 🛠️ GLOBAL STYLES */
+/* GLOBAL STYLES */
 body {
   background-color: var(--bg-main);
   background: var(--bg-gradient);
@@ -45,7 +45,7 @@ body {
   min-height: 100vh;
 }
 
-/* 🌓 THEME SWITCHER (Role-Based) */
+/* THEME SWITCHER (Role-Based) */
 body[data-role="patient"] {
   --color-primary: #16a34a; /* Green-600 */
   --bg-gradient: linear-gradient(135deg, #ecfdf5 0%, #f8fafc 50%, #f0fdf4 100%);
@@ -56,7 +56,7 @@ body[data-role="doctor"] {
   --bg-gradient: linear-gradient(135deg, #eff6ff 0%, #f8fafc 50%, #eef2ff 100%);
 }
 
-/* 🧱 STEP 3: STANDARD CARD DESIGN (USE EVERYWHERE) */
+/* STANDARD CARD DESIGN (USE EVERYWHERE) */
 .card-standard {
   background-color: var(--bg-card);
   border-radius: 1rem; /* rounded-2xl */
@@ -65,7 +65,7 @@ body[data-role="doctor"] {
   padding: 1.25rem; /* p-5 */
 }
 
-/* 🔘 STEP 4: BUTTON SYSTEM */
+/* BUTTON SYSTEM */
 .btn-primary-patient {
   background-color: #16a34a; /* bg-green-600 */
   color: white;
@@ -89,7 +89,7 @@ body[data-role="doctor"] {
   @apply transition hover:bg-gray-50 active:scale-95;
 }
 
-/* 🧾 STEP 5: INPUT FIELD DESIGN */
+/* INPUT FIELD DESIGN */
 .input-standard {
   width: 100%;
   border: 1px solid #d1d5db; /* border-gray-300 */
@@ -103,7 +103,7 @@ body[data-role="doctor"] {
   }
 }
 
-/* ✨ STEP 11: MICRO-INTERACTIONS */
+/* MICRO-INTERACTIONS */
 .hover-premium {
   @apply transition hover:shadow-md;
 }

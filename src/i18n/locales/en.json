@@ -1,5 +1,5 @@
 {
-  "welcome": "Welcome to ArogyaPath",
+  "welcome": "Welcome to ArogyamPath",
   "select_language": "Choose your language",
   "auth": {
     "chooseOption": "Choose an option to continue",
@@ -33,7 +33,7 @@
     "sign_out_success": "Signed out successfully"
   },
   "role_entry": {
-    "title": "Welcome to ArogyaPath",
+    "title": "Welcome to ArogyamPath",
     "subtitle": "How would you like to continue today?",
     "patient_title": "I am a Patient",
     "patient_desc": "Book appointments, consult with doctors, and manage health records.",
@@ -303,6 +303,11 @@
     "logout_failed": "Logout failed"
   },
   "patient_appointments": {
+    "sort_by": "Sort By",
+    "sort_rating": "Rating",
+    "sort_experience": "Experience",
+    "sort_name": "A-Z",
+    "new_doctor": "New",
     "failed_load_history": "Failed to load history.",
     "select_time_slot": "Please select a time slot",
     "appointment_confirmed": "Appointment Confirmed!",
@@ -326,6 +331,9 @@
     "detect_location": "Detect Location",
     "no_bookings_found": "No Bookings Found",
     "loading_history": "Loading History...",
+    "loading_doctors": "Loading Doctors...",
+    "no_doctors_found": "No Doctors Found",
+    "failed_load_doctors": "Failed to load doctors.",
     "load_more": "Load More Bookings",
     "rate_now": "Rate Now",
     "rated": "Rated",
@@ -337,6 +345,7 @@
     "rate_desc": "How was your experience?",
     "submit_review": "Submit Review",
     "confirm_appointment": "Confirm Appointment",
+    "confirm": "Confirm",
     "consultation_mode": "Consultation Mode",
     "clinic_visit": "Clinic Visit",
     "online_video": "Online Video",
@@ -359,7 +368,18 @@
     "status_updated": "Appointment status updated!",
     "status_update_failed": "Failed to update appointment status",
     "opening_video": "Opening Video Consultation...",
-    "video_failed": "Could not start video call"
+    "video_failed": "Could not start video call",
+    "appointment_for_title": "Appointment For?",
+    "appointment_for_subtitle": "Who needs to see the doctor?",
+    "myself": "Myself",
+    "family_member": "Family Member",
+    "selected_badge": "Selected",
+    "member_details": "Member Details",
+    "full_name_label": "Full Name *",
+    "age_label": "Age *",
+    "gender_label": "Gender *",
+    "mobile_number_label": "Mobile Number *",
+    "continue_btn": "Continue →"
   },
   "symptom_history": {
     "recent": "Recent",

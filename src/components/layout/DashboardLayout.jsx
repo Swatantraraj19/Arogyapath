@@ -61,7 +61,6 @@ const DashboardLayout = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden font-sans">
-      {/* 🔮 AMBIENT BACKGROUND ORBS */}
       <div className={`fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-${roleColor}-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
       <div className={`fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-${roleColor}-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
 
@@ -77,17 +76,15 @@ const DashboardLayout = ({
         roleColor={roleColor}
       />
 
-      {/* 🖥️ MAIN CONTENT AREA */}
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto z-10 custom-scrollbar relative">
 
-        {/* TOP BAR / HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-8 md:mb-12">
           <div className="flex items-start justify-between animate-in slide-in-from-left duration-700 shrink-0 w-full md:w-auto gap-4">
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight flex-1 min-w-0 break-words">
               {t("dashboard.hello")} <span className={`text-${roleColor}-600`}>{welcomeName}</span>
             </h2>
 
-            {/* 📱 MOBILE TOGGLE */}
+            {/* MOBILE TOGGLE */}
             <button
               onClick={() => setSidebarOpen(!isSidebarOpen)}
               className={`lg:hidden shrink-0 p-2.5 mt-1 bg-white shadow-sm border border-gray-100 rounded-[14px] text-${roleColor}-600 active:scale-90 transition-transform`}
@@ -98,7 +95,7 @@ const DashboardLayout = ({
 
           <div className="flex w-full md:w-auto items-center justify-between md:justify-end gap-2 md:gap-4 animate-in slide-in-from-right duration-700 shrink-0">
 
-            {/* 📍 LOCATION DROPDOWN */}
+            {/* LOCATION DROPDOWN */}
             <div className="relative shrink-0" ref={locRef}>
               <button
                 onClick={() => setIsLocOpen(!isLocOpen)}
@@ -116,7 +113,7 @@ const DashboardLayout = ({
               {isLocOpen && (
                 <div className="absolute top-full left-0 md:left-auto md:right-0 mt-3 w-[260px] md:w-64 bg-white border border-gray-100 rounded-3xl shadow-2xl shadow-gray-200/50 p-3 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-left md:origin-top-right">
 
-                  {/* 🔍 SEARCH INPUT */}
+                  {/* SEARCH INPUT */}
                   <div className="relative mb-3">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                     <input
@@ -141,7 +138,7 @@ const DashboardLayout = ({
                           {selectedCity && <div className="ml-auto bg-blue-600 w-1.5 h-1.5 rounded-full animate-pulse"></div>}
                         </div>
 
-                        {/* 📍 Quick Action: Detect Location */}
+                        {/* Detect Location */}
                         <button
                           disabled={isLocating}
                           onClick={() => {
@@ -221,7 +218,7 @@ const DashboardLayout = ({
               <span className="absolute top-2.5 right-2.5 md:top-4 md:right-4 w-2 h-2 md:w-2.5 md:h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
 
-            {/* 👤 PROFILE QUICK VIEW */}
+            {/* PROFILE QUICK VIEW */}
             <div className="flex shrink-0 items-center gap-2 md:gap-4 pl-1.5 md:pl-2 bg-white border border-gray-100 rounded-3xl p-1.5 pr-2 md:pr-6 shadow-sm hover:shadow-md transition-all group cursor-pointer">
               <div className={`w-9 h-9 md:w-11 md:h-11 rounded-2xl overflow-hidden bg-${roleColor}-50 border border-${roleColor}-100 flex items-center justify-center`}>
                 {userDoc?.photoUrl ? (
@@ -244,7 +241,7 @@ const DashboardLayout = ({
           </div>
         </div>
 
-        {/* 🧩 DYNAMIC TAB CONTENT */}
+        {/* DYNAMIC TAB CONTENT */}
         <div className="min-h-[60vh]">
           {children}
         </div>

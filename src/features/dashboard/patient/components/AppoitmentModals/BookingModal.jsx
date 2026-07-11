@@ -9,8 +9,6 @@ const BookingModal = ({
 }) => {
   const [formError, setFormError] = useState("");
 
-  // ✅ Fix 1: handleFamilyProceed moved OUTSIDE the if-block (correct React pattern)
-  // ✅ Fix 2: Number() conversion for safe age validation
   const handleFamilyProceed = useCallback(() => {
     if (!familyMember.name.trim() || familyMember.name.trim().length < 3 || !/^[a-zA-Z\s]+$/.test(familyMember.name)) {
       return setFormError(t("profile_setup.error_name"));
@@ -26,7 +24,7 @@ const BookingModal = ({
     confirmBooking("proceed_to_step1");
   }, [familyMember, confirmBooking, t]);
 
-  // ✅ Fix 3: Reset formError when modal closes
+  //  Fix 3: Reset formError when modal closes
   const handleClose = useCallback(() => {
     setFormError("");
     onClose();
@@ -34,17 +32,16 @@ const BookingModal = ({
 
   if (!isOpen) return null;
 
-  // ── Step 0: Who is this appointment for? ──────────────────────────────────
+  // Who is this appointment for
   if (bookingStep === 0) {
     return (
       <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
         <div className="bg-white w-full max-w-lg rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative animate-in sm:zoom-in-95 slide-in-from-bottom-full sm:slide-in-from-bottom-0 max-h-[90vh] overflow-y-auto scrollbar-hide">
 
-          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-2xl font-black text-gray-900">Appointment For?</h3>
-              <p className="text-xs font-bold text-gray-400 mt-0.5">Who needs to see the doctor?</p>
+              <h3 className="text-2xl font-black text-gray-900">{t("patient_appointments.appointment_for_title")}</h3>
+              <p className="text-xs font-bold text-gray-400 mt-0.5">{t("patient_appointments.appointment_for_subtitle")}</p>
             </div>
             <button onClick={handleClose} className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500">
               <X size={20} />
@@ -64,9 +61,9 @@ const BookingModal = ({
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${bookingFor === "myself" ? "bg-emerald-100" : "bg-gray-100"}`}>
                 <User size={22} className={bookingFor === "myself" ? "text-emerald-600" : "text-gray-400"} />
               </div>
-              <span>Myself</span>
+              <span>{t("patient_appointments.myself")}</span>
               {bookingFor === "myself" && (
-                <span className="text-[9px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">Selected</span>
+                <span className="text-[9px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">{t("patient_appointments.selected_badge")}</span>
               )}
             </button>
 
@@ -81,9 +78,9 @@ const BookingModal = ({
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${bookingFor === "family" ? "bg-blue-100" : "bg-gray-100"}`}>
                 <Users size={22} className={bookingFor === "family" ? "text-blue-600" : "text-gray-400"} />
               </div>
-              <span>Family Member</span>
+              <span>{t("patient_appointments.family_member")}</span>
               {bookingFor === "family" && (
-                <span className="text-[9px] font-black bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">Selected</span>
+                <span className="text-[9px] font-black bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">{t("patient_appointments.selected_badge")}</span>
               )}
             </button>
           </div>
@@ -92,11 +89,10 @@ const BookingModal = ({
           {bookingFor === "family" && (
             <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 mb-4">
               <div className="h-px bg-gray-100 my-2" />
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Member Details</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t("patient_appointments.member_details")}</p>
 
-              {/* Full Name */}
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name *</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("patient_appointments.full_name_label")}</label>
                 <input
                   type="text"
                   placeholder="e.g. Rahul Kumar"
@@ -106,10 +102,9 @@ const BookingModal = ({
                 />
               </div>
 
-              {/* Age + Gender */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Age *</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("patient_appointments.age_label")}</label>
                   <input
                     type="number"
                     placeholder="e.g. 8"
@@ -121,22 +116,21 @@ const BookingModal = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Gender *</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("patient_appointments.gender_label")}</label>
                   <select
                     value={familyMember.gender}
                     onChange={(e) => { setFamilyMember(p => ({ ...p, gender: e.target.value })); setFormError(""); }}
-                    className="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl font-bold text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all"
+                    className="w-full mt-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl font-bold text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white"
                   >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="Male">{t("profile_setup.gender_male")}</option>
+                    <option value="Female">{t("profile_setup.gender_female")}</option>
+                    <option value="Other">{t("profile_setup.gender_other")}</option>
                   </select>
                 </div>
               </div>
 
-              {/* Mobile Number */}
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mobile Number *</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{t("patient_appointments.mobile_number_label")}</label>
                 <input
                   type="tel"
                   maxLength="10"
@@ -152,7 +146,6 @@ const BookingModal = ({
                 />
               </div>
 
-              {/* Validation Error */}
               {formError && (
                 <p className="text-xs font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl border border-red-100 animate-in fade-in">
                   ⚠️ {formError}
@@ -161,19 +154,17 @@ const BookingModal = ({
             </div>
           )}
 
-          {/* Continue Button */}
           <button
             onClick={bookingFor === "myself" ? () => confirmBooking("proceed_to_step1") : handleFamilyProceed}
             className="w-full py-5 rounded-2xl font-black text-base shadow-xl bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all"
           >
-            Continue →
+            {t("patient_appointments.continue_btn")}
           </button>
         </div>
       </div>
     );
   }
 
-  // ── Step 1 & Step 2: 100% UNCHANGED ───────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white w-full max-w-lg rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden animate-in sm:zoom-in-95 slide-in-from-bottom-full sm:slide-in-from-bottom-0 max-h-[90vh] overflow-y-auto scrollbar-hide">
@@ -249,7 +240,7 @@ const BookingModal = ({
               className={`w-full py-5 rounded-2xl font-black text-lg shadow-xl flex items-center justify-center gap-3 transition-all active:scale-95 ${selectedSlot && !isProcessing ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-900/10' : 'bg-gray-100 text-gray-400'}`}
             >
               {isProcessing && <Loader2 size={20} className="animate-spin" />}
-              {isProcessing ? t("patient_appointments.confirming") : `${t("patient_appointments.confirm_pay")} ${consultationMode === "clinic" ? selectedDoctor?.clinicFee || "₹800" : selectedDoctor?.onlineFee || "₹600"}`}
+              {isProcessing ? t("patient_appointments.confirming") : t("patient_appointments.confirm")}
             </button>
           </div>
         ) : (

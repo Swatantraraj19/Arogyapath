@@ -25,9 +25,26 @@ const FindDoctorCard = ({ doc, t, onBook }) => (
       <div className="flex items-center justify-between py-3 border-y border-gray-50 mb-4">
         <div className="flex flex-col text-left">
           <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-left">{t("patient_appointments.rating")}</span>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Star size={11} className="text-amber-400 fill-amber-400" />
-            <span className="text-xs font-black text-gray-700">{doc.rating || "4.8"}</span>
+          <div className="flex items-center gap-1 mt-0.5 min-h-[16px]">
+            {doc.rating !== undefined ? (
+              <>
+                <Star size={11} className="text-amber-400 fill-amber-400" />
+                <span className="text-xs font-black text-gray-700">{Number(doc.rating || 0).toFixed(1)}</span>
+                {(!doc.reviewCount || Number(doc.reviewCount) === 0) ? (
+                  <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md ml-1.5 uppercase tracking-wider">
+                    {t("patient_appointments.new_doctor", "New")}
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-bold text-gray-400 ml-1">
+                    ({doc.reviewCount})
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                {t("patient_appointments.new_doctor", "New")}
+              </span>
+            )}
           </div>
         </div>
         <div className="w-px h-6 bg-gray-100"></div>

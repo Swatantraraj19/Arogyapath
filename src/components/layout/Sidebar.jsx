@@ -10,7 +10,6 @@ const Sidebar = ({
   setIsMobileOpen,
   roleColor = "emerald"
 }) => {
-  // 🎨 COLOR MAP FOR DYNAMIC TAILWIND CLASSES
   const colorMap = {
     emerald: {
       active: "bg-emerald-600 text-white shadow-emerald-200",
@@ -30,7 +29,7 @@ const Sidebar = ({
 
   return (
     <>
-      {/* 📱 MOBILE OVERLAY */}
+      {/* MOBILE OVERLAY */}
       {isMobileOpen && (
         <div 
           className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
@@ -38,18 +37,17 @@ const Sidebar = ({
         />
       )}
 
-      {/* 🏰 SIDEBAR MAIN */}
+      {/*  SIDEBAR MAIN */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-50 p-8 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
         ${isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* BRANDING */}
         <div className="flex items-center gap-4 mb-10 px-2">
           <div className={`w-14 h-14 flex items-center justify-center p-1.5 bg-white rounded-full border-2 ${theme.border} hover:scale-105 transition-transform duration-500 overflow-hidden shrink-0`}>
-            <img src={logo} alt="ArogyaPath Logo" className="w-full h-full object-cover" />
+            <img src={logo} alt="ArogyamPath Logo" className="w-full h-full object-cover" />
           </div>
           <span className="text-2xl font-black text-gray-900 tracking-tight">
-            Arogya<span className={roleColor === 'emerald' ? 'text-emerald-600' : 'text-blue-600'}>Path</span>
+            Arogyam<span className={roleColor === 'emerald' ? 'text-emerald-600' : 'text-blue-600'}>Path</span>
           </span>
         </div>
 

@@ -14,7 +14,7 @@ const RoleEntry = () => {
   const { currentUser, userDoc } = useAuth();
   const [selectedRole, setSelectedRole] = useState(null);
 
-  // 🛡️ BACK-BUTTON GUARD: If role is already verified for this session, stay on dashboard
+  // If role is already verified for this session, stay on dashboard
   useEffect(() => {
     const roleVerified = localStorage.getItem("roleVerified");
     if (roleVerified && userDoc?.completedRoles?.includes(roleVerified)) {
@@ -22,7 +22,7 @@ const RoleEntry = () => {
     }
   }, [userDoc, navigate]);
 
-  // 🛡️ NO AUTO-REDIRECT: User must always select a role in this session
+  // User must always select a role in this session
   const roles = [
     {
       id: "patient",
@@ -49,7 +49,7 @@ const RoleEntry = () => {
   ];
 
   const handleRoleHover = (roleId) => {
-    // 🌓 DYNAMIC THEME SWITCH (Live Preview)
+    // DYNAMIC THEME SWITCH (Live Preview)
     document.body.setAttribute("data-role", roleId);
   };
 
@@ -72,8 +72,7 @@ const RoleEntry = () => {
       return;
     }
     
-    // 🛡️ MULTI-ROLE SYNC: Update the "Active Role" in the database
-    // This ensures that refreshes and tab re-opens go to the correct dashboard
+    // MULTI-ROLE SYNC: Update the "Active Role" in the database
     try {
       await updateDoc(doc(db, "users", currentUser.uid), {
         role: selectedRole
@@ -82,10 +81,9 @@ const RoleEntry = () => {
       console.error("Failed to sync active role:", error);
     }
 
-    // 🛡️ MULTI-ROLE CHECK: 
     // If user already finished onboarding for THIS role, go to dashboard.
     if (userDoc?.completedRoles?.includes(selectedRole)) {
-      // 🔑 VERIFY SESSION: Set the SPECIFIC role key for this session
+      //  VERIFY SESSION: Set the SPECIFIC role key for this session
       localStorage.setItem("roleVerified", selectedRole);
       navigate(`/dashboard/${selectedRole}`, { replace: true });
     } else {
@@ -96,7 +94,6 @@ const RoleEntry = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-8">
       
-      {/* HEADER */}
       <div className="text-center space-y-2 max-w-lg">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
           {t("role_entry.title")}
@@ -106,7 +103,6 @@ const RoleEntry = () => {
         </p>
       </div>
 
-      {/* ROLE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
         {roles.map((role) => (
           <div
@@ -121,12 +117,10 @@ const RoleEntry = () => {
             `}
           >
             <div className="space-y-6">
-              {/* ICON CIRCLE */}
               <div className={`w-20 h-20 rounded-2xl ${role.bg} ${role.color} flex items-center justify-center transition-transform group-hover:scale-110 duration-300`}>
                 {role.icon}
               </div>
 
-              {/* TEXT CONTENT */}
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold text-gray-900">
                   {role.title}
@@ -136,7 +130,6 @@ const RoleEntry = () => {
                 </p>
               </div>
 
-              {/* SELECTION INDICATOR */}
               <div className={`
                 flex items-center gap-2 font-bold transition-opacity duration-300
                 ${selectedRole === role.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
@@ -147,7 +140,6 @@ const RoleEntry = () => {
               </div>
             </div>
 
-            {/* SELECTION DOT */}
             {selectedRole === role.id && (
               <div className={`absolute top-4 right-4 w-4 h-4 rounded-full ${role.id === 'patient' ? 'bg-emerald-500' : 'bg-blue-500'} animate-pulse`} />
             )}

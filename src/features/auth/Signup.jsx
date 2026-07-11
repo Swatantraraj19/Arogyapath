@@ -20,24 +20,20 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // 🛡️ STRICT REGEX
   const validateEmail = (email) => {
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
   };
 
-  // 🛡️ DOMESTIC VALIDATOR CHECK
   const isAllowedDomain = (email) => {
     const allowedDomains = ["@gmail.com", "@outlook.com", "@yahoo.com", "@hotmail.com", "@icloud.com"];
     return allowedDomains.some(domain => email.toLowerCase().endsWith(domain));
   };
 
-  // 🔄 LIVE VALIDATION ENGINE
   useEffect(() => {
     const isEmailValid = validateEmail(formData.email);
     const isDomainValid = formData.email ? isAllowedDomain(formData.email) : true;
     const isPasswordValid = formData.password.length >= 6;
 
-    // Email Check
     if (formData.email && !isEmailValid) {
       setEmailError(t("auth.invalidEmail"));
     } else if (formData.email && !isDomainValid) {
@@ -46,7 +42,6 @@ const Signup = () => {
       setEmailError("");
     }
 
-    // Password Check
     if (formData.password && !isPasswordValid) {
       setPasswordError(t("auth.errorPasswordLength"));
     } else {
@@ -60,7 +55,6 @@ const Signup = () => {
     e.preventDefault();
     if (!isFormValid || loading) return;
 
-    // 🔑 STEP 1: SET THE KEY BEFORE SIGNUP (State Orchestration)
     sessionStorage.setItem("justLoggedIn", "true");
 
     try {
@@ -77,7 +71,6 @@ const Signup = () => {
       toast.success(t("auth.accountCreated"));
       navigate("/role-entry", { replace: true });
     } catch (error) {
-      // 🛡️ Cleanup key if signup fails
       sessionStorage.removeItem("justLoggedIn");
       console.error("Signup Error:", error.code);
       if (error.code === 'auth/email-already-in-use') {
@@ -91,7 +84,6 @@ const Signup = () => {
   };
 
   const handleGoogleSignup = async () => {
-    // 🔑 STEP 1: SET THE KEY BEFORE GOOGLE SIGNUP
     sessionStorage.setItem("justLoggedIn", "true");
 
     try {
@@ -99,7 +91,7 @@ const Signup = () => {
       const result = await signInWithGoogle();
       const user = result.user;
 
-      // 🛡️ SECURITY: Create the user doc if it doesn't exist
+      //  Create the user doc if it doesn't exist
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         createdAt: serverTimestamp()
@@ -108,7 +100,6 @@ const Signup = () => {
       toast.success(t("welcome"));
       navigate("/role-entry", { replace: true });
     } catch (error) {
-      // 🛡️ Cleanup key if signup fails
       sessionStorage.removeItem("justLoggedIn");
       if (error.code !== 'auth/popup-closed-by-user') {
         toast.error(error.message || t("auth.errorUnexpected"));
@@ -131,7 +122,6 @@ const Signup = () => {
         </div>
 
         <form onSubmit={handleSignup} noValidate className="space-y-4">
-          {/* EMAIL FIELD */}
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">{t("auth.email")}</label>
             <input
@@ -149,7 +139,6 @@ const Signup = () => {
             )}
           </div>
 
-          {/* PASSWORD FIELD */}
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">{t("auth.password")}</label>
             <div className="relative">

@@ -1,7 +1,5 @@
 /**
- * ArogyaPath - PWA Icon Generator
- * Generates branded icons for all required PWA sizes
- * Run: node generate-icons.mjs
+ * ArogyamPath - PWA Icon Generator
  */
 
 import { createCanvas } from 'canvas';
@@ -21,8 +19,7 @@ const SIZES = [
 ];
 
 /**
- * Draws the ArogyaPath branded icon on a canvas
- * Design: Green gradient background + white medical cross + "A" letter
+ * Draws the ArogyamPath branded icon on a canvas
  */
 function drawIcon(size) {
   const canvas = createCanvas(size, size);
@@ -81,7 +78,7 @@ function drawIcon(size) {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.font = `bold ${size * 0.075}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('AROGYAPATH', R, size * 0.85);
+    ctx.fillText('AROGYAMPATH', R, size * 0.85);
   }
 
   // --- Subtle bottom highlight arc ---
@@ -98,14 +95,14 @@ function drawIcon(size) {
 }
 
 // --- Generate and Save All Icons ---
-console.log('\n🚀 ArogyaPath PWA Icon Generator\n');
+console.log('\n ArogyamPath PWA Icon Generator\n');
 
 SIZES.forEach(({ name, size }) => {
   const canvas = drawIcon(size);
   const buffer = canvas.toBuffer('image/png');
   const outputPath = path.join(publicDir, name);
   fs.writeFileSync(outputPath, buffer);
-  console.log(`  ✅ Generated: ${name} (${size}x${size}px)`);
+  console.log(`  Generated: ${name} (${size}x${size}px)`);
 });
 
-console.log('\n🎉 All icons generated successfully in /public folder!\n');
+console.log('\n All icons generated successfully in /public folder!\n');

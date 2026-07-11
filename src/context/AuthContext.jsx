@@ -17,14 +17,12 @@ export const AuthProvider = ({ children }) => {
     let unsubscribeDoc = null;
 
     const unsubscribeAuth = onAuthChange(async (user) => {
-      // 🛡️ MENTOR TIP: Always reset loading to true when auth state changes
-      // This prevents guards from making premature decisions during re-login.
       setLoading(true);
 
       if (user) {
         setCurrentUser(user);
         
-        // 🔄 REAL-TIME USER PROFILE LISTENER (Step 6 Upgrade)
+        // REAL-TIME USER PROFILE LISTENER 
         const docRef = doc(db, "users", user.uid);
         unsubscribeDoc = onSnapshot(docRef, (snap) => {
           if (snap.exists()) {

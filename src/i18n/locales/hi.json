@@ -1,5 +1,5 @@
 {
-  "welcome": "आरोग्यपथ में आपका स्वागत है",
+  "welcome": "आरोग्यम् पथ में आपका स्वागत है",
   "select_language": "अपनी भाषा चुनें",
   "auth": {
     "chooseOption": "जारी रखने के लिए एक विकल्प चुनें",
@@ -33,7 +33,7 @@
     "sign_out_success": "सफलतापूर्वक साइन आउट किया गया"
   },
   "role_entry": {
-    "title": "आरोग्यपथ में आपका स्वागत है",
+    "title": "आरोग्यम् पथ में आपका स्वागत है",
     "subtitle": "आज आप कैसे जारी रखना चाहेंगे?",
     "patient_title": "मैं एक मरीज हूँ",
     "patient_desc": "अपॉइंटमेंट बुक करें, डॉक्टरों से सलाह लें और स्वास्थ्य रिकॉर्ड प्रबंधित करें।",
@@ -299,6 +299,11 @@
     "logout_failed": "लॉगआउट विफल रहा"
   },
   "patient_appointments": {
+    "sort_by": "सॉर्ट करें",
+    "sort_rating": "रेटिंग",
+    "sort_experience": "अनुभव",
+    "sort_name": "A-Z",
+    "new_doctor": "नया",
     "failed_load_history": "इतिहास लोड करने में विफल।",
     "select_time_slot": "कृपया एक समय स्लॉट चुनें",
     "appointment_confirmed": "अपॉइंटमेंट की पुष्टि हो गई!",
@@ -322,6 +327,9 @@
     "detect_location": "स्थान का पता लगाएं",
     "no_bookings_found": "कोई बुकिंग नहीं मिली",
     "loading_history": "इतिहास लोड हो रहा है...",
+    "loading_doctors": "डॉक्टरों को लोड किया जा रहा है...",
+    "no_doctors_found": "कोई डॉक्टर नहीं मिला",
+    "failed_load_doctors": "डॉक्टरों को लोड करने में विफल।",
     "load_more": "अधिक बुकिंग लोड करें",
     "rate_now": "रेट करें",
     "rated": "रेट किया गया",
@@ -333,6 +341,7 @@
     "rate_desc": "आपका अनुभव कैसा रहा?",
     "submit_review": "समीक्षा सबमिट करें",
     "confirm_appointment": "अपॉइंटमेंट की पुष्टि करें",
+    "confirm": "पुष्टि करें",
     "consultation_mode": "परामर्श का तरीका",
     "clinic_visit": "क्लिनिक पर जाएँ",
     "online_video": "ऑनलाइन वीडियो",
@@ -355,7 +364,18 @@
     "status_updated": "अपॉइंटमेंट की स्थिति अपडेट की गई!",
     "status_update_failed": "अपॉइंटमेंट की स्थिति अपडेट करने में विफल",
     "opening_video": "वीडियो परामर्श शुरू किया जा रहा है...",
-    "video_failed": "वीडियो कॉल शुरू नहीं हो सका"
+    "video_failed": "वीडियो कॉल शुरू नहीं हो सका",
+    "appointment_for_title": "अपॉइंटमेंट किसके लिए?",
+    "appointment_for_subtitle": "डॉक्टर से किसे मिलना है?",
+    "myself": "स्वयं (मेरे लिए)",
+    "family_member": "परिवार का सदस्य",
+    "selected_badge": "चयनित",
+    "member_details": "सदस्य का विवरण",
+    "full_name_label": "पूरा नाम *",
+    "age_label": "उम्र *",
+    "gender_label": "लिंग *",
+    "mobile_number_label": "मोबाइल नंबर *",
+    "continue_btn": "आगे बढ़ें →"
   },
   "symptom_history": {
     "recent": "हाल ही में",

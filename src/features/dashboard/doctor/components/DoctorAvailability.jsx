@@ -5,7 +5,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { db } from "../../../../firebase/config";
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 
-// 🕒 Premium 12-Hour Time Picker Component (Instant)
+//  Premium 12-Hour Time Picker Component (Instant)
 const TimePickerInput = React.memo(({ value, onChange, t }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -94,7 +94,7 @@ const DoctorAvailability = ({ t }) => {
   const [blockedDates, setBlockedDates] = useState([]); // 🏖️ Vacation Dates
   const [newHoliday, setNewHoliday] = useState("");
 
-  // 📥 Fetch Availability from Database
+  //  Fetch Availability from Database
   useEffect(() => {
     const fetchAvailability = async () => {
       if (!currentUser) return;
@@ -169,7 +169,7 @@ const DoctorAvailability = ({ t }) => {
     const day = weeklySchedule[dayIndex];
     const slot = day.slots[slotIndex];
     
-    // 🛡️ Pre-deletion check for active bookings in this specific slot
+    //  Pre-deletion check for active bookings in this specific slot
     try {
       const q = query(
         collection(db, "appointments"),
@@ -182,7 +182,7 @@ const DoctorAvailability = ({ t }) => {
 
       // Filter to find only those that match both the day of the week and the time range
       const slotConflicts = allActiveAppts.filter(app => {
-        // 1️⃣ Check Day of Week
+        //  Check Day of Week
         const dateParts = (app.rawDate || app.date).split("-");
         let appDate;
         if (dateParts.length === 3) {
@@ -194,7 +194,7 @@ const DoctorAvailability = ({ t }) => {
         const appDayName = appDate.toLocaleDateString('en-US', { weekday: 'long' });
         if (appDayName !== day.day) return false;
 
-        // 2️⃣ Check Time Range (Is the appointment inside this slot?)
+        //  Check Time Range (Is the appointment inside this slot?)
         const appTime24 = to24h(app.time);
         // Condition: appTime is between slot.start (inclusive) and slot.end (exclusive)
         return appTime24 >= slot.start && appTime24 < slot.end;
@@ -224,7 +224,7 @@ const DoctorAvailability = ({ t }) => {
     
     const newDates = [...blockedDates, newHoliday].sort();
     
-    // 🛡️ Pre-save conflict check
+    //  Pre-save conflict check
     const q = query(
       collection(db, "appointments"),
       where("doctorId", "==", currentUser.uid),
@@ -286,7 +286,7 @@ const DoctorAvailability = ({ t }) => {
 
 
 
-  // 🕒 Helper: Convert 12h (10:30 AM) to 24h (10:30)
+  //  Helper: Convert 12h (10:30 AM) to 24h (10:30)
   const to24h = (time12h) => {
     if (!time12h) return "";
     const [time, modifier] = time12h.split(' ');
@@ -295,7 +295,7 @@ const DoctorAvailability = ({ t }) => {
     if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
     return `${hours.toString().padStart(2, '0')}:${minutes}`;
   };
-  // 🛡️ Check for Booked Appointment Conflicts
+  //  Check for Booked Appointment Conflicts
   const checkForConflicts = async () => {
     if (!currentUser) return [];
     try {
@@ -344,7 +344,7 @@ const DoctorAvailability = ({ t }) => {
   const handleSave = async (force = false) => {
     if (!currentUser) return toast.error(t("doctor_availability.login_first") || "Please login first");
     
-    // 🛡️ Validate NO Overlapping Slots in the schedule itself
+    //  Validate NO Overlapping Slots in the schedule itself
     for (const day of weeklySchedule) {
       const sorted = [...day.slots].sort((a, b) => a.start.localeCompare(b.start));
       for (let i = 0; i < sorted.length - 1; i++) {
@@ -404,7 +404,7 @@ const DoctorAvailability = ({ t }) => {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-5xl mx-auto pb-20">
 
-      {/* 🚀 HEADER SECTION */}
+      {/*  HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1 text-left">
           <h2 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
@@ -428,7 +428,7 @@ const DoctorAvailability = ({ t }) => {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-        {/* 🗓️ WEEKLY SCHEDULE LIST */}
+        {/*  WEEKLY SCHEDULE LIST */}
         <div className="xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-4 mb-2">
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">{t("doctor_availability.weekly_timeline")}</h3>
@@ -454,7 +454,7 @@ const DoctorAvailability = ({ t }) => {
                   className={`group flex flex-col p-5 rounded-[2.5rem] border transition-all relative ${isBlocked ? 'bg-amber-50/30 border-amber-100 opacity-80' : isActive ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50/50 border-transparent opacity-60'}`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                    {/* 🟢 Day & Add Button Section */}
+                    {/*  Day & Add Button Section */}
                     <div className="flex items-center gap-4 shrink-0 lg:w-[280px]">
                       <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-inner ${isBlocked ? 'bg-amber-100 text-amber-600' : isActive ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
                         {isBlocked ? <AlertCircle size={18} /> : isActive ? <Clock size={18} /> : <Calendar size={18} />}
@@ -480,7 +480,7 @@ const DoctorAvailability = ({ t }) => {
                       )}
                     </div>
 
-                    {/* 🕒 Slots Section (Strict Boundaries) */}
+                    {/*  Slots Section (Strict Boundaries) */}
                     {!isBlocked && isActive && (
                       <div className="flex-1 flex flex-wrap items-center gap-2 pr-6">
                         {day.slots.map((slot, sIdx) => (
@@ -525,7 +525,7 @@ const DoctorAvailability = ({ t }) => {
           </div>
         </div>
 
-        {/* ⚙️ QUICK SETTINGS */}
+        {/*  QUICK SETTINGS */}
         <div className="space-y-8">
           <div className="bg-gray-900 rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-all duration-700"></div>
@@ -612,7 +612,7 @@ const DoctorAvailability = ({ t }) => {
         </div>
 
       </div>
-      {/* ⚠️ CONFLICT WARNING MODAL */}
+      {/*  CONFLICT WARNING MODAL */}
       {showWarning && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
           <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 space-y-8">
@@ -647,7 +647,7 @@ const DoctorAvailability = ({ t }) => {
                     </div>
                   </div>
                   
-                  {/* 💥 Conflict Reason Badge */}
+                  {/*  Conflict Reason Badge */}
                   <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-100">
                     <AlertCircle size={12} className="text-amber-500" />
                     <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider">
