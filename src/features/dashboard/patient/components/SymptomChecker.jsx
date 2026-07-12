@@ -11,6 +11,11 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
   const { t: localT, i18n } = useTranslation();
   const { currentUser } = useAuth();
   const t = propT || localT;
+  const getTranslatedSpecialist = (specialist) => {
+    if (!specialist) return "";
+    const specKey = specialist.toLowerCase().replace(/\s+/g, '_');
+    return t(`profile_setup.spec_${specKey}`) || specialist;
+  };
   const [symptomText, setSymptomText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [assessment, setAssessment] = useState(null);
@@ -142,48 +147,63 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
               </div>
             </div>
 
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                {/* 👨‍⚕️ SPECIALIST INFO */}
-                <div className="space-y-2 text-left">
-                  <div className="space-y-1">
-                    <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.primary_specialist")}</h5>
-                    <div className="p-3 bg-emerald-50/20 rounded-2xl border border-emerald-100/30 flex flex-col items-start">
-                      <span className="text-[8px] font-black text-emerald-600/60 uppercase">{t("symptom_checker.recommended")}</span>
-                      <h3 className="text-lg font-black text-emerald-800 leading-none">{assessment.primarySpecialist}</h3>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                {/* 👨‍⚕️ SPECIALIST INFO CARD */}
+                <div className="p-5 bg-gradient-to-br from-emerald-50/30 to-teal-50/10 rounded-3xl border border-emerald-100/30 flex flex-col justify-between space-y-4 text-left">
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-emerald-200 text-emerald-700">
+                        {t("symptom_checker.recommended")}
+                      </span>
+                      <h3 className="text-2xl font-black text-emerald-800 leading-tight">{getTranslatedSpecialist(assessment.primarySpecialist)}</h3>
                     </div>
+
+                    {assessment.reasoning && (
+                      <div className="p-3 bg-white/60 border border-emerald-100/20 rounded-xl relative overflow-hidden">
+                        <span className="text-[8px] font-black text-emerald-700/60 uppercase tracking-wider block mb-1">
+                          💡 {i18n.language?.startsWith('hi') ? "एआई विश्लेषण" : "AI ANALYSIS"}
+                        </span>
+                        <p className="text-xs font-semibold text-emerald-800/80 leading-relaxed italic">
+                          "{assessment.reasoning}"
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {assessment.secondarySpecialists.length > 0 && (
-                    <div className="space-y-1">
-                      <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[7px]">{t("symptom_checker.also_recommended")}</h5>
-                      <div className="flex flex-wrap gap-1">
+                    <div className="space-y-1.5 pt-3 border-t border-emerald-100/30">
+                      <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.also_recommended")}</h5>
+                      <div className="flex flex-wrap gap-1.5">
                         {assessment.secondarySpecialists.map((s, i) => (
-                          <span key={i} className="px-2.5 py-1 bg-gray-50 text-gray-600 rounded-lg text-[9px] font-bold border border-gray-100">{s}</span>
+                          <span key={i} className="px-2.5 py-1 bg-white text-emerald-800/70 rounded-lg text-[9px] font-bold border border-emerald-100/20 shadow-sm">{getTranslatedSpecialist(s)}</span>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* ✅ SUGGESTED ACTIONS */}
-                <div className="space-y-2 text-left">
-                  <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.suggested_actions")}</h5>
-                  <div className="grid grid-cols-1 gap-1">
-                    {assessment.precautions?.map((p, i) => (
-                      <div key={i} className="px-3 py-1.5 bg-emerald-50/50 text-emerald-800 rounded-lg text-[12px] font-bold border border-emerald-100/20 flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500 shrink-0" />
-                        {p}
-                      </div>
-                    ))}
+                {/* ✅ SUGGESTED ACTIONS CARD */}
+                <div className="p-5 bg-gray-50/50 rounded-3xl border border-gray-100/80 flex flex-col justify-between space-y-4 text-left">
+                  <div className="space-y-3">
+                    <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.suggested_actions")}</h5>
+                    <div className="space-y-2">
+                      {assessment.precautions?.map((p, i) => (
+                        <div key={i} className="px-3.5 py-2 bg-white text-gray-700 rounded-xl text-xs font-semibold border border-gray-100 shadow-sm flex items-center gap-2.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          {p}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 💬 FINAL SUGGESTION CARD */}
+                  <div className="p-3 bg-emerald-50/20 rounded-xl border border-emerald-100/10 relative overflow-hidden text-center mt-auto">
+                    <p className="text-emerald-800/70 text-[11px] font-bold italic leading-tight">
+                      "{assessment.suggestion}"
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* 💬 FINAL SUGGESTION CARD */}
-              <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 relative overflow-hidden text-center mx-auto max-w-xl">
-                <div className="absolute top-0 right-0 p-1 opacity-5 text-emerald-900 pointer-events-none"><MessageSquare size={40} /></div>
-                <p className="text-gray-500 text-sm font-bold italic leading-tight relative z-10">"{assessment.suggestion}"</p>
               </div>
 
               {/* ACTION BUTTONS */}
@@ -199,7 +219,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                   className={`flex flex-col items-center p-4 text-white rounded-3xl transition-all shadow-lg active:scale-[0.98] text-center h-full group ${assessment.emergency ? 'bg-red-600 hover:bg-red-700 shadow-red-900/10' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/10'}`}
                 >
                   <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80 mb-1.5">{t("symptom_checker.recommended_path")}</span>
-                  <h5 className="text-sm font-black leading-tight mb-3">{t("symptom_checker.consult")} {assessment.primarySpecialist}</h5>
+                  <h5 className="text-sm font-black leading-tight mb-3">{t("symptom_checker.consult")} {getTranslatedSpecialist(assessment.primarySpecialist)}</h5>
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-[8px] font-black uppercase tracking-widest group-hover:gap-3 transition-all">
                     {t("symptom_checker.book_now")} <ChevronRight size={10} />
                   </div>
