@@ -17,7 +17,7 @@ const DoctorAppointment = ({ t }) => {
   const [hasMore, setHasMore] = useState(true);
   const [isMoreLoading, setIsMoreLoading] = useState(false);
 
-  // 🧹 Final Stable Auto-Cleanup: Move overdue appointments to 'completed'
+  //  Final Stable Auto-Cleanup: Move overdue appointments to 'completed'
   useEffect(() => {
     if (!currentUser?.uid) return;
 
@@ -47,7 +47,7 @@ const DoctorAppointment = ({ t }) => {
             const [year, month, day] = appDateStr.split('-');
             appointmentDate = new Date(Number(year), Number(month) - 1, Number(day));
           } else {
-            // Fallback for other formats (like "May 12, 2026")
+            // Fallback for other formats 
             appointmentDate = new Date(appDateStr);
           }
 
@@ -74,7 +74,7 @@ const DoctorAppointment = ({ t }) => {
     cleanupOverdue();
   }, [currentUser?.uid]);
 
-  // 📥 Fetch Real-time Upcoming Appointments (Limited to 50 for performance)
+  //  Fetch Real-time Upcoming Appointments (Limited to 50 for performance)
   useEffect(() => {
     if (!currentUser) return;
 
@@ -125,7 +125,7 @@ const DoctorAppointment = ({ t }) => {
         collection(db, "appointments"),
         where("doctorId", "==", currentUser.uid),
         where("status", "==", activeSubTab),
-        orderBy("rawDate", "desc"), // 🚀 Latest First
+        orderBy("rawDate", "desc"), // Latest First
         limit(10)
       );
 
@@ -182,7 +182,7 @@ const DoctorAppointment = ({ t }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSubTab]);
 
-  // 🛠️ Helper for 24h conversion (needed for sorting)
+  // Helper for 24h conversion
   const to24h = (timeStr) => {
     if (!timeStr) return "00:00";
     const parts = timeStr.split(' ');
@@ -214,7 +214,7 @@ const DoctorAppointment = ({ t }) => {
       app.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // 🔄 Dynamic Sorting: Ascending for Upcoming, Descending for others
+    //  Dynamic Sorting: Ascending for Upcoming, Descending for others
     result.sort((a, b) => {
       const dateA = a.rawDate || a.date || "";
       const dateB = b.rawDate || b.date || "";
@@ -231,7 +231,7 @@ const DoctorAppointment = ({ t }) => {
     return result;
   }, [appointments, activeSubTab, filterType, searchQuery]);
 
-  // 🧬 Group Appointments by Date
+  //  Group Appointments by Date
   const groupedAppointments = filteredAppointments.reduce((groups, app) => {
     const date = app.date;
     if (!groups[date]) groups[date] = [];
@@ -251,6 +251,7 @@ const DoctorAppointment = ({ t }) => {
 
       await updateDoc(appRef, updateData);
       setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
+      setIsDetailModalOpen(false); // 🛡️ Close modal on successful update
       toast.success(t("patient_appointments.status_updated") || `Appointment marked as ${newStatus}`, { icon: '✅' });
     } catch (error) {
       console.error("Action update failed:", error);
@@ -265,11 +266,11 @@ const DoctorAppointment = ({ t }) => {
       
       if (!roomId) {
         const shortHash = Math.random().toString(36).substring(2, 10);
-        roomId = `ArogyaPath_${shortHash}_${app.id ? app.id.slice(-4) : 'call'}`;
+        roomId = `ArogyamPath_${shortHash}_${app.id ? app.id.slice(-4) : 'call'}`;
         needsUpdate = true;
       }
       
-      // 🚀 Open window IMMEDIATELY to prevent Safari/Chrome from blocking the popup!
+      //  Open window IMMEDIATELY to prevent Safari/Chrome from blocking the popup!
       window.open(`https://meet.jit.si/${roomId}`, '_blank');
       
       if (needsUpdate) {
@@ -288,7 +289,6 @@ const DoctorAppointment = ({ t }) => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-      {/* 🔍 HEADER & FILTERS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex w-full md:w-fit overflow-x-auto gap-1.5 md:gap-2 p-1.5 bg-gray-100/50 rounded-2xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <button onClick={() => setActiveSubTab("upcoming")} className={`whitespace-nowrap flex-1 md:flex-none px-3 md:px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === "upcoming" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{t("appointments.upcoming")}</button>
@@ -308,7 +308,7 @@ const DoctorAppointment = ({ t }) => {
         </div>
       </div>
 
-      {/* 🏷️ CONSULT TYPE FILTERS */}
+      {/*  CONSULT TYPE FILTERS */}
       <div className="flex overflow-x-auto gap-2 px-1 pr-6 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {[
           { id: "All", label: t("appointments.all_consults"), icon: null },
@@ -329,7 +329,7 @@ const DoctorAppointment = ({ t }) => {
         ))}
       </div>
 
-      {/* 📋 GROUPED APPOINTMENT LIST */}
+      {/*  GROUPED APPOINTMENT LIST */}
       <div className="space-y-10">
         {Object.keys(groupedAppointments).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-[3rem] border border-dashed border-gray-200">
@@ -429,7 +429,7 @@ const DoctorAppointment = ({ t }) => {
           ))
         )}
 
-        {/* 📑 LOAD MORE BUTTON */}
+        {/*  LOAD MORE BUTTON */}
         {activeSubTab !== "upcoming" && hasMore && (
           <div className="flex justify-center py-10 animate-in fade-in duration-500">
             <button
@@ -451,7 +451,7 @@ const DoctorAppointment = ({ t }) => {
         )}
       </div>
 
-      {/* 📄 DETAIL MODAL */}
+      {/*  DETAIL MODAL */}
       {isDetailModalOpen && selectedAppointment && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">

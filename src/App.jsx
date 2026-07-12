@@ -9,33 +9,18 @@ import RoleEntry from "./features/auth/RoleEntry";
 import ProfileSetup from "./features/auth/ProfileSetup";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import PageLoader from "./components/PageLoader";
 import { LocationProvider } from "./context/LocationContext";
 import ErrorBoundary from "./components/ErrorBoundary";
-import "./index.css"; // Ensure index.css is imported for variables
+import "./index.css"; 
 
-// 🚀 OPTIMIZATION: Lazy load heavy dashboard components
+// Lazy load heavy dashboard components
 const PatientDashboard = lazy(() => import("./features/dashboard/patient/PatientDashboard"));
 const DoctorDashboard = lazy(() => import("./features/dashboard/doctor/DoctorDashboard"));
-
-// ✨ PREMIUM LOADING FALLBACK
-const PageLoader = () => {
-  const isDoctorPath = window.location.pathname.includes('/doctor');
-  const colorBase = isDoctorPath ? 'blue' : 'emerald';
-  
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <div className={`w-16 h-16 border-4 border-${colorBase}-100 border-t-${colorBase}-500 rounded-full animate-spin mb-4 shadow-sm`}></div>
-      <p className={`text-${colorBase}-800/40 font-black text-xs uppercase tracking-widest animate-pulse`}>
-        Healing the data...
-      </p>
-    </div>
-  );
-};
 
 
 const App = () => {
   return (
-    // 🟣 STEP 2: APPLY GLOBAL BACKGROUND (Official Requirement)
     <div 
       style={{ background: "var(--bg-gradient)" }} 
       className="min-h-screen selection:bg-emerald-100 selection:text-emerald-900"
@@ -46,23 +31,17 @@ const App = () => {
             <Toaster position="top-center" reverseOrder={false} />
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* STEP 1: App Opens (Language Page) */}
                 <Route path="/" element={<PublicRoute><LanguageSelection /></PublicRoute>} />
                 
-                {/* STEP 2: Auth Choice Page */}
                 <Route path="/auth-choice" element={<PublicRoute><AuthChoice /></PublicRoute>} />
                 
-                {/* STEP 3 & LOGIN */}
                 <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
                 
-                {/* Path for future Role Entry (Step 4) */}
                 <Route path="/role-entry" element={<ProtectedRoute><RoleEntry /></ProtectedRoute>} />
                 
-                {/* STEP 5: Profile Setup */}
                 <Route path="/profile-setup/:role" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
 
-                {/* STEP 6: Dashboards */}
                 <Route path="/dashboard/patient" element={<ProtectedRoute><PatientDashboard /></ProtectedRoute>} />
                 <Route path="/dashboard/doctor" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
               </Routes>

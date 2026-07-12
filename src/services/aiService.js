@@ -1,9 +1,7 @@
 import { db } from "../firebase/config";
 import { collection, addDoc, query, where, getDocs, orderBy, limit, serverTimestamp } from "firebase/firestore";
 
-/**
- * 🏥 ArogyaPath Ultimate Guidance Engine (v5.3)
- * Optimized for exact specialty matching with all 21 registered categories.
+/** Optimized for exact specialty matching with all 21 registered categories.
  */
 
 const MIN_CONFIDENCE = 20; 
@@ -268,7 +266,7 @@ const normalizeWord = (word) => {
   return w.replace(/ing$|s$|es$/i, '');
 };
 
-// 🏠 ROBUST LOCAL RULES FALLBACK ENGINE
+// ROBUST LOCAL RULES FALLBACK ENGINE
 const analyzeSymptomsLocal = (symptoms, language = "en") => {
   const rawInput = symptoms.toLowerCase();
   const tokens = rawInput.split(/[\s,.;?]+/).map(normalizeWord).filter(t => t.length > 1);
@@ -338,7 +336,7 @@ export const analyzeSymptoms = async (symptoms, userId = null, language = "en") 
     }
 
     try {
-      // 🚀 CALL GEMINI API WITH STRICT SPECIALTY CONSTRAINTS
+      // CALL GEMINI API WITH STRICT SPECIALTY CONSTRAINTS
       const isHindi = language && language.startsWith('hi');
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,

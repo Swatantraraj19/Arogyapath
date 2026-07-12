@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   Clock,
   ArrowUpRight,
-  RefreshCw
+  RefreshCw,
+  X
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -94,7 +95,7 @@ const SymptomHistory = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-20">
 
-      {/* 📒 HEADER SECTION */}
+      {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -176,7 +177,7 @@ const SymptomHistory = () => {
         </div>
       )}
 
-      {/* 📑 LOAD MORE BUTTON */}
+      {/*  LOAD MORE BUTTON */}
       {hasMore && history.length > 0 && (
         <div className="flex justify-center py-10 animate-in fade-in duration-500">
           <button
@@ -198,7 +199,7 @@ const SymptomHistory = () => {
         </div>
       )}
 
-      {/* 🔎 REPORT MODAL */}
+      {/* REPORT MODAL */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
@@ -217,7 +218,7 @@ const SymptomHistory = () => {
                   onClick={() => setSelectedRecord(null)}
                   className="p-3 bg-gray-50 rounded-2xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
                 >
-                  <ArrowUpRight className="rotate-180" size={20} />
+                  <X size={20} />
                 </button>
               </div>
 

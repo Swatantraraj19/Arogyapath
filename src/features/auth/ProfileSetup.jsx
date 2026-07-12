@@ -7,6 +7,36 @@ import { db } from "../../firebase/config";
 import { useAuth } from "../../context/AuthContext";
 import { User, Phone, MapPin, Award, Activity, Camera, Mail, ClipboardList, Stethoscope } from "lucide-react";
 
+const INDIAN_STATES_AND_UT = new Set([
+  "andhra pradesh", "arunachal pradesh", "assam", "bihar", "chhattisgarh", "goa", "gujarat", "haryana", 
+  "himachal pradesh", "jharkhand", "karnataka", "kerala", "madhya pradesh", "maharashtra", "manipur", 
+  "meghalaya", "mizoram", "nagaland", "odisha", "punjab", "rajasthan", "sikkim", "tamil nadu", "telangana", 
+  "tripura", "uttar pradesh", "uttarakhand", "west bengal", "jammu and kashmir", "ladakh",
+  "puducherry", "chandigarh", "lakshadweep", "dadra and nagar haveli", "daman and diu", "andaman and nicobar",
+  "up", "mp", "ap", "mh", "gj", "ka", "kl", "tn", "wb", "hr", "pb", "rj", "br", "jh", "ts"
+]);
+
+const getCityFromLocation = (loc) => {
+  if (!loc) return "";
+  
+  const cleanWord = (word) => {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  };
+
+  const parts = loc.split(",").map(p => p.trim());
+  for (const part of parts) {
+    if (!part) continue;
+    const lowerPart = part.toLowerCase();
+    
+    if (!INDIAN_STATES_AND_UT.has(lowerPart)) {
+      return part.split(/\s+/).map(cleanWord).join(" ");
+    }
+  }
+  
+  const words = loc.split(/\s+/).map(w => w.trim());
+  return words[0] ? cleanWord(words[0]) : "";
+};
+
 const ProfileSetup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -32,26 +62,26 @@ const ProfileSetup = () => {
     clinicAddress: "",
   });
 
-  // 🌓 Apply Role-Based Theme
+  // Apply Role-Based Theme
   useEffect(() => {
     if (role) {
       document.body.setAttribute("data-role", role);
     }
   }, [role]);
 
-  // 🚀 Scroll to top on mount
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // 🛡️ NAVIGATION GUARD: If already finished this specific role, skip setup
+  // If already finished this specific role, skip setup
   useEffect(() => {
     if (userDoc?.completedRoles?.includes(role)) {
       navigate(`/dashboard/${role}`, { replace: true });
     }
   }, [userDoc, role, navigate]);
 
-  // 🛠️ IMAGE COMPRESSION LOGIC
+  // IMAGE COMPRESSION LOGIC
   const compressImage = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -64,7 +94,6 @@ const ProfileSetup = () => {
           let width = img.width;
           let height = img.height;
 
-          // Max dimensions for profile pic
           const MAX_SIZE = 800;
           if (width > height) {
             if (width > MAX_SIZE) {
@@ -164,7 +193,7 @@ const ProfileSetup = () => {
     try {
       setLoading(true);
 
-      // ☁️ CLOUDINARY UPLOAD
+      // CLOUDINARY UPLOAD
       let photoUrl = preview;
       if (image) {
         toast.loading(t("profile_setup.uploading_photo"), { id: "uploading" });
@@ -174,8 +203,10 @@ const ProfileSetup = () => {
       
       const profileData = {
         fullName: formData.fullName,
+        fullName_lowercase: formData.fullName.toLowerCase(),
         phone: formData.phone,
         location: formData.location,
+        city: getCityFromLocation(formData.location),
         photoUrl: photoUrl || "",
         role: role,
         uid: currentUser.uid,
@@ -186,14 +217,17 @@ const ProfileSetup = () => {
           bloodGroup: formData.bloodGroup
         } : {
           specialization: formData.specialization,
-          experience: formData.experience,
+          experience: parseInt(formData.experience) || 0,
+          rating: 4,
+          ratingCount: 0,
+          reviewCount: 0,
           license: formData.license,
           clinicName: formData.clinicName,
           clinicAddress: formData.clinicAddress
         })
       };
 
-      // 🔑 VERIFY SESSION
+      // VERIFY SESSION
       localStorage.setItem("roleVerified", role);
 
       // 1. Save to role-specific collection
@@ -220,7 +254,6 @@ const ProfileSetup = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // 🛡️ Special handling for Phone (digits only, max 10)
     if (name === "phone") {
       const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
       setFormData((prev) => ({ ...prev, [name]: digitsOnly }));
@@ -228,7 +261,6 @@ const ProfileSetup = () => {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    // Clear error for this field as user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -266,7 +298,6 @@ const ProfileSetup = () => {
     <div className="flex items-center justify-center min-h-screen p-6 overflow-y-auto">
       <div className="max-w-2xl w-full bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 space-y-8">
         
-        {/* HEADER */}
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-bold text-gray-900">
             {role === "patient" ? t("profile_setup.title_patient") : t("profile_setup.title_doctor")}

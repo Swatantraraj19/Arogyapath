@@ -5,25 +5,23 @@ import { toast } from "react-hot-toast";
 const LocationContext = createContext();
 
 export const LocationProvider = ({ children }) => {
-  // 💾 PERSISTENCE: Initialize from localStorage to prevent reset on refresh
   const [selectedCity, setSelectedCity] = useState(() => {
-    return localStorage.getItem("arogyapath_city") || null;
+    return localStorage.getItem("arogyampath_city") || null;
   });
   
   const [predictions, setPredictions] = useState([]);
   const [isLocating, setIsLocating] = useState(false);
   const isLocatingRef = useRef(false);
 
-  // 💾 SYNC: Save to localStorage whenever city changes
   useEffect(() => {
     if (selectedCity) {
-      localStorage.setItem("arogyapath_city", selectedCity);
+      localStorage.setItem("arogyampath_city", selectedCity);
     }
   }, [selectedCity]);
   const [autocompleteService, setAutocompleteService] = useState(null);
   const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-  // 🌍 LOAD GOOGLE MAPS SDK (Only once for the whole app)
+  // LOAD GOOGLE MAPS SDK 
   useEffect(() => {
     if (window.google?.maps?.places) {
       if (!autocompleteService) setAutocompleteService(new window.google.maps.places.AutocompleteService());
@@ -32,7 +30,6 @@ export const LocationProvider = ({ children }) => {
 
     const script = document.createElement("script");
     script.id = "google-maps-sdk";
-    // 🚀 Fixed: Added loading=async and callback to follow best practices
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&loading=async&callback=initGoogleMaps`;
     script.async = true;
     script.defer = true;
@@ -44,7 +41,6 @@ export const LocationProvider = ({ children }) => {
     if (!document.getElementById("google-maps-sdk")) document.head.appendChild(script);
   }, [GOOGLE_API_KEY, autocompleteService]);
 
-  // 📍 MANUAL DETECT LOCATION
   const handleDetectLocation = async () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported");
@@ -54,7 +50,7 @@ export const LocationProvider = ({ children }) => {
     setIsLocating(true);
     isLocatingRef.current = true;
     
-    // ⏱️ Add a timeout of 10 seconds to prevent hanging
+    // Add a timeout of 10 seconds to prevent hanging 
     const timeoutId = setTimeout(() => {
       if (isLocatingRef.current) {
         setIsLocating(false);
@@ -113,7 +109,7 @@ export const LocationProvider = ({ children }) => {
     );
   };
 
-  // 🔍 SEARCH LOGIC (With Debounce to save API hits)
+  // Debounce to save API hits 
   const searchTimeout = useRef(null);
   const searchCities = (input) => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);

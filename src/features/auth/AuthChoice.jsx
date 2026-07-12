@@ -7,11 +7,10 @@ const AuthChoice = () => {
   const navigate = useNavigate();
 
   return (
-    // 🟣 STEP 6: SPACING SYSTEM
     <div className="flex items-center justify-center min-h-[90vh] p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-8 animate-in fade-in duration-1000">
         
-        {/* 🔠 STEP 7: TYPOGRAPHY (TRANSLATED) */}
+        {/* TYPOGRAPHY (TRANSLATED) */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">
             {t("welcome")}
@@ -21,7 +20,7 @@ const AuthChoice = () => {
           </p>
         </div>
 
-        {/* 🔘 STEP 4: BUTTON SYSTEM (TRANSLATED) */}
+        {/* BUTTON SYSTEM (TRANSLATED) */}
         <div className="flex flex-col gap-4">
           <button
             onClick={() => navigate("/login")}
@@ -38,7 +37,7 @@ const AuthChoice = () => {
           </button>
         </div>
 
-        {/* 🔙 BACK OPTION (Step 7: Typography) */}
+        {/* BACK OPTION (Typography) */}
         <div className="text-center">
           <button 
             onClick={() => navigate("/")}

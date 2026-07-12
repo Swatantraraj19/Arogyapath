@@ -9,7 +9,7 @@ const LanguageSelection = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPrompt || null);
 
   useEffect(() => {
-    // 🧠 ROLE-BASED SWITCH: Initializing with "patient" theme logic (Green)
+    // ROLE-BASED SWITCH: Initializing with "patient" theme logic (Green)
     document.body.setAttribute("data-role", "patient");
 
     const handleBeforeInstallPrompt = (e) => {
@@ -52,7 +52,7 @@ const LanguageSelection = () => {
   };
 
   return (
-    // 🟣 STEP 6: SPACING SYSTEM
+    // SPACING SYSTEM
     <div className="relative flex items-center justify-center min-h-[90vh] p-6 w-full">
       {deferredPrompt && (
         <button
@@ -85,7 +85,7 @@ const LanguageSelection = () => {
         <div className="flex flex-col items-center space-y-4">
           <img
             src={logo}
-            alt="ArogyaPath Logo"
+            alt="ArogyamPath Logo"
             className="h-36 w-auto object-contain drop-shadow-sm"
           />
           <div className="space-y-2">
@@ -95,7 +95,6 @@ const LanguageSelection = () => {
           </div>
         </div>
 
-        {/* 🧱 STEP 3: STANDARD CARD DESIGN (REFINED) */}
         <div className="grid grid-cols-1 gap-4 px-4">
 
           {/* ENGLISH SELECTION CARD */}

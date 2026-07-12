@@ -4,14 +4,14 @@ import { db } from "../../../../firebase/config";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../../../../context/AuthContext";
 
-const DoctorOverview = ({ t, onViewSchedule }) => {
+const DoctorOverview = ({ t, onViewSchedule, userDoc }) => {
   const { currentUser } = useAuth();
   const [appointments, setAppointments] = useState([]);
 
   useEffect(() => {
     if (!currentUser) return;
 
-    // 📥 Fetch ALL appointments for this doctor to calculate stats
+    //  Fetch ALL appointments for this doctor to calculate stats
     const q = query(
       collection(db, "appointments"),
       where("doctorId", "==", currentUser.uid)
@@ -24,6 +24,43 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
 
     return () => unsubscribe();
   }, [currentUser]);
+
+  //  Auto-sync ratings to doctor's profile document if out of sync
+  useEffect(() => {
+    if (!currentUser || appointments.length === 0 || !userDoc) return;
+
+    const syncRatingToProfile = async () => {
+      const ratings = appointments.filter(a => a.rating > 0).map(a => a.rating);
+      const totalPoints = ratings.reduce((sum, r) => sum + Number(r), 0);
+      const count = ratings.length;
+      const avgRating = count > 0 ? (totalPoints / count).toFixed(1) : "0.0";
+
+      const dbRating = String(userDoc.rating || "0.0");
+      const dbPoints = Number(userDoc.totalRatingPoints || 0);
+      const dbCount = Number(userDoc.reviewCount || 0);
+
+      if (
+        dbRating !== avgRating ||
+        dbPoints !== totalPoints ||
+        dbCount !== count
+      ) {
+        try {
+          const { doc, updateDoc } = await import("firebase/firestore");
+          const docRef = doc(db, "doctors", currentUser.uid);
+          await updateDoc(docRef, {
+            rating: avgRating,
+            totalRatingPoints: totalPoints,
+            reviewCount: count
+          });
+          console.log("Successfully synced rating to doctor profile:", { avgRating, totalPoints, count });
+        } catch (error) {
+          console.error("Failed to sync rating to profile:", error);
+        }
+      }
+    };
+
+    syncRatingToProfile();
+  }, [appointments, userDoc, currentUser]);
 
   const metrics = useMemo(() => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -56,7 +93,7 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
   return (
     <div className="space-y-10 animate-in fade-in duration-700 max-w-7xl mx-auto">
       
-      {/* 🚀 PREMIUM HERO SECTION */}
+      {/*  PREMIUM HERO SECTION */}
       <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-blue-200/50 group">
         <div className="relative z-10 flex flex-col xl:flex-row items-center gap-12">
           <div className="flex-1 space-y-8 text-left">
@@ -93,7 +130,7 @@ const DoctorOverview = ({ t, onViewSchedule }) => {
         <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[40%] bg-indigo-400/20 rounded-full blur-[100px] pointer-events-none"></div>
       </div>
 
-      {/* 📊 PRACTICE STATS */}
+      {/*  PRACTICE STATS */}
       <div className="space-y-8">
         <div className="flex items-center justify-between px-2">
           <h4 className="text-xl font-black text-gray-900 uppercase tracking-tighter">{t("doctor_dashboard.performance_overview")}</h4>

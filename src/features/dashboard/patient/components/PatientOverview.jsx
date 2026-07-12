@@ -9,7 +9,7 @@ const PatientOverview = ({ t, setActiveTab }) => {
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-10">
 
-      {/* 🚀 SMART CHECKER HERO SECTION */}
+      {/* SMART CHECKER HERO SECTION */}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-900 rounded-[2rem] p-6 sm:p-8 md:p-10 text-white relative overflow-hidden shadow-xl shadow-emerald-500/10">
         <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
           <div className="flex-1 space-y-6 text-left">
@@ -50,10 +50,10 @@ const PatientOverview = ({ t, setActiveTab }) => {
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-400/10 rounded-full blur-[100px]"></div>
       </div>
 
-      {/* 🧩 QUICK ACTIONS & TIPS GRID */}
+      {/* QUICK ACTIONS & TIPS GRID */}
       <div className="grid grid-cols-1 gap-8">
         
-        {/* 💡 DAILY HEALTH TIP */}
+        {/* DAILY HEALTH TIP */}
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-7 rounded-[3rem] border border-amber-100 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
           <div className="space-y-5 relative z-10">
             <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-[1.3rem] flex items-center justify-center">

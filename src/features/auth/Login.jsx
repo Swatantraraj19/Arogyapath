@@ -19,19 +19,16 @@ const Login = () => {
   const [emailError, setEmailError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // 🛡️ THE "GOLD STANDARD" REGEX
   const validateEmail = (email) => {
     const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return re.test(email.toLowerCase());
   };
 
-  // 🛡️ DOMESTIC VALIDATOR CHECK
   const isAllowedDomain = (email) => {
     const allowedDomains = ["@gmail.com", "@outlook.com", "@yahoo.com", "@hotmail.com", "@icloud.com"];
     return allowedDomains.some(domain => email.toLowerCase().endsWith(domain));
   };
 
-  // 🔄 LIVE VALIDATION ENGINE
   useEffect(() => {
     const isEmailValid = validateEmail(formData.email);
     const isDomainValid = formData.email ? isAllowedDomain(formData.email) : true;
@@ -52,7 +49,7 @@ const Login = () => {
     e.preventDefault();
     if (!isFormValid || loading) return;
 
-    // 🔑 STEP 1: SET THE KEY BEFORE LOGIN (State Orchestration)
+    // SET THE KEY BEFORE LOGIN (State Orchestration)
     sessionStorage.setItem("justLoggedIn", "true");
 
     try {
@@ -62,10 +59,9 @@ const Login = () => {
       toast.success(t("auth.welcomeBack"));
       navigate("/role-entry", { replace: true });
     } catch (error) {
-      // 🛡️ Cleanup key if login fails
       sessionStorage.removeItem("justLoggedIn");
       console.error("Login Error:", error.code);
-      // 🛡️ SECURITY BEST PRACTICE: Grouping credential errors to prevent account enumeration
+      // SECURITY BEST PRACTICE: Grouping credential errors to prevent account enumeration
       const credentialErrors = ['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'];
 
       if (credentialErrors.includes(error.code)) {
@@ -101,7 +97,6 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    // 🔑 STEP 1: SET THE KEY BEFORE LOGIN
     sessionStorage.setItem("justLoggedIn", "true");
 
     try {
@@ -109,7 +104,7 @@ const Login = () => {
       const result = await signInWithGoogle();
       const user = result.user;
 
-      // 🛡️ SECURITY: Create the user doc if it doesn't exist (e.g., first-time Google login)
+      // Create the user doc if it doesn't exist 
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         createdAt: serverTimestamp()
@@ -118,9 +113,7 @@ const Login = () => {
       toast.success(t("auth.welcomeBack"));
       navigate("/role-entry", { replace: true });
     } catch (error) {
-      // 🛡️ Cleanup key if login fails
       sessionStorage.removeItem("justLoggedIn");
-      // 🛡️ MENTOR TIP: Suppress "popup-closed-by-user" to avoid annoying the user
       if (error.code !== 'auth/popup-closed-by-user') {
         toast.error(error.message || t("auth.errorUnexpected"));
       }
@@ -142,7 +135,6 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleLogin} noValidate className="space-y-4">
-          {/* EMAIL FIELD */}
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">{t("auth.email")}</label>
             <input
@@ -160,7 +152,6 @@ const Login = () => {
             )}
           </div>
 
-          {/* PASSWORD FIELD */}
           <div className="space-y-1">
             <div className="flex justify-between items-center">
               <label className="text-sm font-semibold text-gray-700">{t("auth.password")}</label>

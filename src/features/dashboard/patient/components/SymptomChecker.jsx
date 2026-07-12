@@ -60,7 +60,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
   return (
     <div className="space-y-4 animate-in fade-in duration-500 pb-10 max-w-4xl mx-auto px-4 md:px-0">
 
-      {/* 🌿 PREMIUM GREEN HERO */}
+      {/* PREMIUM GREEN HERO */}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-9 text-white relative overflow-hidden shadow-lg border border-emerald-500/20">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
 
@@ -126,7 +126,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
         </div>
       </div>
 
-      {/* 📊 RESULTS SECTION */}
+      {/* RESULTS SECTION */}
       {assessment && (
         <div className="animate-in slide-in-from-bottom-4 duration-500 space-y-4">
           {assessment.emergency && (
@@ -149,7 +149,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
 
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                {/* 👨‍⚕️ SPECIALIST INFO CARD */}
+                {/* SPECIALIST INFO CARD */}
                 <div className="p-5 bg-gradient-to-br from-emerald-50/30 to-teal-50/10 rounded-3xl border border-emerald-100/30 flex flex-col justify-between space-y-4 text-left">
                   <div className="space-y-3">
                     <div className="space-y-1">
@@ -162,7 +162,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                     {assessment.reasoning && (
                       <div className="p-3 bg-white/60 border border-emerald-100/20 rounded-xl relative overflow-hidden">
                         <span className="text-[8px] font-black text-emerald-700/60 uppercase tracking-wider block mb-1">
-                          💡 {i18n.language?.startsWith('hi') ? "एआई विश्लेषण" : "AI ANALYSIS"}
+                           {i18n.language?.startsWith('hi') ? "एआई विश्लेषण" : "AI ANALYSIS"}
                         </span>
                         <p className="text-xs font-semibold text-emerald-800/80 leading-relaxed italic">
                           "{assessment.reasoning}"
@@ -183,7 +183,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                   )}
                 </div>
 
-                {/* ✅ SUGGESTED ACTIONS CARD */}
+                {/* SUGGESTED ACTIONS CARD */}
                 <div className="p-5 bg-gray-50/50 rounded-3xl border border-gray-100/80 flex flex-col justify-between space-y-4 text-left">
                   <div className="space-y-3">
                     <h5 className="font-bold text-gray-400 uppercase tracking-widest text-[8px]">{t("symptom_checker.suggested_actions")}</h5>
@@ -197,7 +197,7 @@ const SymptomChecker = ({ t: propT, setActiveTab }) => {
                     </div>
                   </div>
 
-                  {/* 💬 FINAL SUGGESTION CARD */}
+                  {/* FINAL SUGGESTION CARD */}
                   <div className="p-3 bg-emerald-50/20 rounded-xl border border-emerald-100/10 relative overflow-hidden text-center mt-auto">
                     <p className="text-emerald-800/70 text-[11px] font-bold italic leading-tight">
                       "{assessment.suggestion}"

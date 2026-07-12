@@ -23,7 +23,7 @@ const PatientProfileUpdate = ({ existingData }) => {
     location: existingData?.location || "",
   });
 
-  // 🛠️ IMAGE COMPRESSION LOGIC
+  // IMAGE COMPRESSION LOGIC
   const compressImage = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();

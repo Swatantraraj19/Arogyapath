@@ -9,6 +9,36 @@ import {
   Trash2, X, Check, Building2, ClipboardList, Stethoscope 
 } from "lucide-react";
 
+const INDIAN_STATES_AND_UT = new Set([
+  "andhra pradesh", "arunachal pradesh", "assam", "bihar", "chhattisgarh", "goa", "gujarat", "haryana", 
+  "himachal pradesh", "jharkhand", "karnataka", "kerala", "madhya pradesh", "maharashtra", "manipur", 
+  "meghalaya", "mizoram", "nagaland", "odisha", "punjab", "rajasthan", "sikkim", "tamil nadu", "telangana", 
+  "tripura", "uttar pradesh", "uttarakhand", "west bengal", "jammu and kashmir", "ladakh",
+  "puducherry", "chandigarh", "lakshadweep", "dadra and nagar haveli", "daman and diu", "andaman and nicobar",
+  "up", "mp", "ap", "mh", "gj", "ka", "kl", "tn", "wb", "hr", "pb", "rj", "br", "jh", "ts"
+]);
+
+const getCityFromLocation = (loc) => {
+  if (!loc) return "";
+  
+  const cleanWord = (word) => {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  };
+
+  const parts = loc.split(",").map(p => p.trim());
+  for (const part of parts) {
+    if (!part) continue;
+    const lowerPart = part.toLowerCase();
+    
+    if (!INDIAN_STATES_AND_UT.has(lowerPart)) {
+      return part.split(/\s+/).map(cleanWord).join(" ");
+    }
+  }
+  
+  const words = loc.split(/\s+/).map(w => w.trim());
+  return words[0] ? cleanWord(words[0]) : "";
+};
+
 const DoctorProfileUpdate = ({ existingData }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
@@ -28,7 +58,7 @@ const DoctorProfileUpdate = ({ existingData }) => {
     clinicAddress: existingData?.clinicAddress || "",
   });
 
-  // 🛠️ IMAGE COMPRESSION LOGIC
+  //  IMAGE COMPRESSION LOGIC
   const compressImage = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -154,15 +184,20 @@ const DoctorProfileUpdate = ({ existingData }) => {
 
       const profileData = {
         fullName: formData.fullName,
+        fullName_lowercase: formData.fullName.toLowerCase(),
         phone: formData.phone,
         location: formData.location,
+        city: getCityFromLocation(formData.location),
         photoUrl: photoUrl || "",
         role: role,
         uid: currentUser.uid,
         email: currentUser.email,
         createdAt: existingData?.createdAt || new Date().toISOString(),
         specialization: formData.specialization,
-        experience: formData.experience,
+        experience: parseInt(formData.experience) || 0,
+        rating: existingData?.rating !== undefined ? existingData.rating : 4,
+        ratingCount: existingData?.ratingCount !== undefined ? existingData.ratingCount : 0,
+        reviewCount: existingData?.reviewCount !== undefined ? existingData.reviewCount : 0,
         license: formData.license,
         clinicName: formData.clinicName,
         clinicAddress: formData.clinicAddress
