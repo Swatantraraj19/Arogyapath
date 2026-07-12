@@ -179,7 +179,8 @@ const DoctorAppointment = ({ t }) => {
       setHasMore(true);
       fetchHistory(false);
     }
-  }, [activeSubTab, fetchHistory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSubTab]);
 
   // Helper for 24h conversion
   const to24h = (timeStr) => {

@@ -229,11 +229,11 @@ const DashboardLayout = ({
                   </div>
                 )}
               </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-black text-gray-900 leading-none mb-1">
+              <div className="hidden sm:block min-w-0 max-w-[120px] md:max-w-[160px]">
+                <p className="text-sm font-black text-gray-900 leading-normal truncate" title={userDoc?.fullName || "Arogya User"}>
                   {userDoc?.fullName || "Arogya User"}
                 </p>
-                <p className={`text-[10px] font-black text-${roleColor}-600 uppercase tracking-widest leading-none`}>
+                <p className={`text-[10px] font-black text-${roleColor}-600 uppercase tracking-widest leading-normal truncate`} title={roleTitle}>
                   {roleTitle}
                 </p>
               </div>
