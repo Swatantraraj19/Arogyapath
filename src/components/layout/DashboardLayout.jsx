@@ -62,10 +62,8 @@ const DashboardLayout = ({
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden font-sans">
       {/*  AMBIENT BACKGROUND ORBS */}
-      <div className={`fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-${roleColor}-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
-      <div className={`fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-${roleColor}-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
-
-
+      <div className={`fixed top-[-10%] left-[-10%] w-[40%] h-[40%] ${roleColor === 'emerald' ? 'bg-emerald-400/10' : 'bg-blue-400/10'} rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
+      <div className={`fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] ${roleColor === 'emerald' ? 'bg-emerald-400/10' : 'bg-blue-400/10'} rounded-full blur-[120px] pointer-events-none animate-pulse`}></div>
 
       {/* SIDEBAR */}
       <Sidebar
