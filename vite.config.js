@@ -57,7 +57,7 @@ export default defineConfig({
         screenshots: [
           {
             src: '/desktop_pwa.png',
-            sizes: '1853x887',
+            sizes: '1883x895',
             type: 'image/png',
             form_factor: 'wide',
             label: 'ArogyamPath Desktop Dashboard'
