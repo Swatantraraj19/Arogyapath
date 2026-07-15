@@ -18,6 +18,40 @@ Unlike traditional appointment booking applications, ArogyamPath focuses on simp
 
 ---
 
+# 📸 Visual Walkthrough
+
+### 🚀 1. Welcome & Landing Page
+*The entry point introducing ArogyamPath's core healthcare offerings.*
+<p align="center">
+  <img src="src/assets/landing.png" alt="Welcome & Landing Page" width="100%">
+</p>
+
+---
+
+### 🔑 2. Secure Role Selection
+*A clean selection interface enabling users to navigate their respective onboarding paths as either a Patient or a Doctor.*
+<p align="center">
+  <img src="src/assets/role.png" alt="Secure Role Selection" width="100%">
+</p>
+
+---
+
+### 🏥 3. Patient Dashboard & AI Symptom Assistant
+*Equipped with AI symptom detection, doctor lookup, and a history of upcoming appointments.*
+<p align="center">
+  <img src="src/assets/patient.png" alt="Patient Dashboard" width="100%">
+</p>
+
+---
+
+### 👨‍⚕️ 4. Doctor Dashboard & Slots Planner
+*Empowering practitioners to manage appointments, configure calendar slots, and view reviews.*
+<p align="center">
+  <img src="src/assets/doctor.png" alt="Doctor Dashboard" width="100%">
+</p>
+
+---
+
 # ✨ Key Features
 
 ## 👤 Patient Portal
