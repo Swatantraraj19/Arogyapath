@@ -262,7 +262,7 @@
     "conflict_title": "Booking Conflict!",
     "conflict_desc": "You have active appointments during the times you're trying to block. You must resolve these conflicts before saving your new schedule.",
     "reason": "Reason:",
-    "review_conflicts": "I'll Review & Fix Conflicts",
+    "review_conflicts": "I will Review & Fix Conflicts",
     "load_failed": "Failed to load your schedule",
     "select_date": "Please select a date",
     "date_blocked": "Date already blocked",
@@ -282,7 +282,7 @@
     "A 15-minute walk after lunch can help regulate your blood sugar levels.",
     "Prioritize 7-8 hours of sleep to boost your immune system naturally.",
     "Take 5-minute eye breaks every hour to reduce digital eye strain.",
-    "Eating more fiber-rich foods can improve your digestion and energy."
+    "Fuel your body with fiber-rich foods for better digestion and lasting energy."
   ],
   "doctor_dashboard": {
     "patients": "Patients",
