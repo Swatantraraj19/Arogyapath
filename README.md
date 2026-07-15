@@ -20,7 +20,7 @@ Unlike traditional appointment booking applications, ArogyamPath focuses on simp
 
 # 📸 Visual Walkthrough
 
-### 🚀 1. Welcome & Landing Page
+### 🚀 1. Welcome to ArogyamPath
 *The entry point introducing ArogyamPath's core healthcare offerings.*
 <p align="center">
   <img src="src/assets/landing.png" alt="Welcome & Landing Page" width="100%">
