@@ -23,7 +23,7 @@ export default defineConfig({
       manifest: {
         name: 'ArogyamPath',
         short_name: 'ArogyamPath',
-        description: 'AI-Powered Symptom Checker and Patient, Doctor Appointment Booking Platform',
+        description: 'AI-Assisted Patient-Doctor Healthcare Platform',
         theme_color: '#059669',
         background_color: '#F8FAFC',
         display: 'standalone',
